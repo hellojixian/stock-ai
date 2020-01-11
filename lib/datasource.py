@@ -84,15 +84,17 @@ class DataSource(object):
                 featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
                                                 parse_dates=True,
                                                 dtype=types_dict)
+                print("{} Records".format(featured_dataset.shape[0]))
             else:
-                if "processed" not in security_list.columns: security_list["processed"]=0
-
-                # hard reset processed state
-                # security_list["processed"]=0
-
-                prev_completed = security_list[security_list.eval("processed==1")].shape[0]
-                remaining_list = security_list[security_list.eval("processed==0")]
                 featured_dataset = pd.DataFrame()
+
+            if "processed" not in security_list.columns: security_list["processed"]=0
+            # hard reset processed state
+            # security_list["processed"]=0
+
+            prev_completed = security_list[security_list.eval("processed==1")].shape[0]
+            remaining_list = security_list[security_list.eval("processed==0")]
+            if remaining_list.shape[0]>0:
                 print("Extracting features: \t",end="\n")
                 i=prev_completed
                 for symbol in remaining_list.index:
@@ -101,16 +103,18 @@ class DataSource(object):
                     featured_subset = _extractFeatures(subset)
                     # update processed progress
                     security_list.loc[symbol,'processed']=1
-                    featured_dataset = featured_dataset.append(featured_subset)
+                    featured_dataset = featured_dataset.append(featured_subset,sort=False)
                     print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
                         round(i/security_list.shape[0]*100,2),i,security_list.shape[0],
                         symbol, subset.shape[0]), end="")
                     # save processed progress
-                    security_list.to_csv(DEFAULT_SECURITYLIST)
+                    if i%100 ==0:
+                        security_list.to_csv(DEFAULT_SECURITYLIST)
+                        featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                 print("")
                 featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
 
-            print("{} Records".format(featured_dataset.shape[0]))
+                print("{} Records".format(featured_dataset.shape[0]))
 
             return
 
