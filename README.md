@@ -25,7 +25,7 @@ Self Learning AI system for automatic trading
 - 最大持仓天数 [1,7]
 - 止赢点    [min: 0.5%,  max: 5.5%, step: 0.5%]
 - 止损点    [min:-2.0%,  max: 0.0%, step: 0.5%]
-- 回落卖出  [min:-1.0%,  max:-3%, step:0.5%]
+- 回落卖出  [min:-1.0%,  max:-3%,   step:0.5%]
 - 连续红卖出 [1,2,3,4]
 
 ### 评估
@@ -49,3 +49,30 @@ Self Learning AI system for automatic trading
 * 随机选择几组股票
 * 对选择出来的股票提取特征
 * 分别比较同一个策略在不同样本集合组中的表现，
+
+保存进度/继续学习 累加经验
+
+## 智能学习框架
+### 目标
+回合胜率最大化
+### 则时
+通过基因算法推算出根据随机股票的环境策略最优解
+### 选股
+- 按历史回测胜率排序 稀疏分位数值
+- 按股价的价位排序
+### 调仓逻辑
+根据损失中位数决定每次触发时候的仓位设置
+
+## 代码结构
+lib.KnowledgeBase
+  - load
+  - save
+
+lib.DataSource
+  - preprocess
+  - loadDataforGALearner
+  - loadDataforBacktest
+
+lib.DynamicPositionProcessor
+
+lib.GALearner
