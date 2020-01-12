@@ -102,7 +102,7 @@ class DataSource(object):
                 processed_secuirties = mp.Value('i', prev_completed)
                 total_secuirties = security_list.shape[0]
 
-                chunks = 30
+                chunks = 10
                 remaining_list_split = np.array_split(remaining_list,chunks)
 
                 pool = mp.Pool(mp.cpu_count())
@@ -166,8 +166,9 @@ def _processExtractFeatures(subset):
     # print progress
     global processed_secuirties,total_secuirties
     processed_secuirties.value+=1
-    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
-            round(processed_secuirties.value/total_secuirties*100,2),
-            processed_secuirties.value, total_secuirties,
-            subset['symbol'].iloc[0], subset.shape[0]), end="")
+    if len(subset)>0:
+        print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
+                round(processed_secuirties.value/total_secuirties*100,2),
+                processed_secuirties.value, total_secuirties,
+                subset['symbol'].iloc[0], subset.shape[0]), end="")
     return subset
