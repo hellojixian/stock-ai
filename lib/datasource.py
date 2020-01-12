@@ -130,6 +130,7 @@ class DataSource(object):
                     security_list.to_csv(DEFAULT_SECURITYLIST)
 
             print("{} records".format(featured_dataset.shape[0]))
+            return featured_dataset
 
         def _extractTradeDaysFeatrues(dataset,trade_days):
             i = 0
