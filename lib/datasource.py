@@ -120,9 +120,8 @@ class DataSource(object):
                     featured_dataset = featured_dataset.drop_duplicates()
 
                     print("\nSaving Progress: {} Records".format(featured_dataset.shape[0]))
-                    security_list.to_csv(DEFAULT_SECURITYLIST)
                     featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
-
+                    security_list.to_csv(DEFAULT_SECURITYLIST)
 
             print("{} Records".format(featured_dataset.shape[0]))
 
