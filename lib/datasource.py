@@ -102,8 +102,9 @@ class DataSource(object):
                 processed_secuirties = mp.Value('i', prev_completed)
                 total_secuirties = security_list.shape[0]
 
-                chunks = 10
-                remaining_list_split = np.array_split(remaining_list,chunks)
+                chunk_size = 300
+                remaining_list_split = np.array_split(remaining_list, 
+                                    round(remaining_list.shape[0] / chunk_size))
 
                 pool = mp.Pool(mp.cpu_count())
                 for chunk in remaining_list_split:
@@ -118,9 +119,10 @@ class DataSource(object):
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
 
+                    print("\nSaving Progress: {} Records".format(featured_dataset.shape[0]))
                     security_list.to_csv(DEFAULT_SECURITYLIST)
                     featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
-                    print("\nSave Progress: {} Records".format(featured_dataset.shape[0]))
+
 
             print("{} Records".format(featured_dataset.shape[0]))
 
