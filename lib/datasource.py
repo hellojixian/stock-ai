@@ -60,20 +60,19 @@ class DataSource(object):
                 security_list['processed'] = 0
                 security_list = security_list[['days']]
                 print("")
-                i=0
-                for symbol in security_list.index:
-                    i+=1
-                    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
-                    subset = subset.sort_values(by=['date'],ascending=True)
-                    start_date = subset['date'].iloc[0]
-                    end_date = subset['date'].iloc[-1]
-                    security_list.loc[symbol,'start_date']=start_date
-                    security_list.loc[symbol,'end_date']=end_date
-                    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Start: {}   End: {}".format(
-                        round(i/security_list.shape[0]*100,2),i,security_list.shape[0],
-                        symbol, start_date, end_date), end="")
+
+                global processed_secuirties,total_secuirties
+                processed_secuirties   = mp.Value('i', 0)
+                total_secuirties = security_list.shape[0]
+
+                pool = mp.Pool(mp.cpu_count())
+                res  = pool.map(_processExtractSecurityData, security_list.iterrows())
+                security_list = pd.DataFrame(res)
+                security_list = security_list.dropna()
+                security_list = security_list.sort_index(ascending=True)
+                security_list.index.name = 'symbol'
                 security_list.to_csv(DEFAULT_SECURITYLIST)
-                print("")
+
             print("{:d} securities".format(security_list.shape[0]))
             return security_list
 
@@ -147,7 +146,6 @@ class DataSource(object):
             trade_days = trade_days.sort_index(ascending=True)
             trade_days.index.name = 'date'
             trade_days.to_csv(DEFAULT_TRADEDATE)
-            print(trade_days)
             return trade_days
 
         dataset = _loadDataset()
@@ -157,15 +155,31 @@ class DataSource(object):
         trade_days = _extractTradeDaysFeatrues(featured_dataset,trade_days)
         return trade_days, security_list
 
+def _processExtractSecurityData(data):
+    global DATASET, processed_secuirties, total_secuirties
+    symbol = data[0]
+    rec = data[1]
+
+    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
+    subset = subset.sort_values(by=['date'],ascending=True)
+    rec['start_date'] = subset['date'].iloc[0]
+    rec['end_date'] = subset['date'].iloc[-1]
+    processed_secuirties.value+=1
+
+    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Start: {}   End: {}".format(
+        round(processed_secuirties.value/total_secuirties*100,2),processed_secuirties.value,total_secuirties,
+        symbol, rec['start_date'], rec['end_date']), end="")
+    return rec
+
 def _processExtractTradeDaysFeatures(data):
     global featured_dataset, processed_days, total_trade_days
     trade_date = data[0]
     rec = data[1]
     subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date.date()))]
-    rec['price_mid']  = subset['close'].quantile(0.5)
-    rec['price_avg']  = subset['close'].mean()
-    rec['change_mid'] = subset['change'].quantile(0.5)
-    rec['change_avg'] = subset['change'].mean()
+    rec['price_mid']  = round(subset['close'].quantile(0.5),2)
+    rec['price_avg']  = round(subset['close'].mean(),2)
+    rec['change_mid'] = round(subset['change'].quantile(0.5),2)
+    rec['change_avg'] = round(subset['change'].mean(),2)
     rec['max_grow'] = subset[subset.eval('change> 9')].shape[0]
     rec['max_drop'] = subset[subset.eval('change<-9')].shape[0]
     rec['win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
