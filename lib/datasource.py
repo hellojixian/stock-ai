@@ -92,7 +92,7 @@ class DataSource(object):
 
             if "processed" not in security_list.columns: security_list["processed"]=0
             # hard reset processed state
-            security_list["processed"]=0
+            # security_list["processed"]=0
 
             prev_completed = security_list[security_list.eval("processed==1")].shape[0]
             remaining_list = security_list[security_list.eval("processed==0")]
