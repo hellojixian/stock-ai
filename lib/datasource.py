@@ -177,13 +177,14 @@ def _processExtractTradeDaysFeatures(data):
     trade_date = data[0]
     rec = data[1]
     subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date))]
-    rec['price_mid']  = round(subset['close'].quantile(0.5),2)
-    rec['price_avg']  = round(subset['close'].mean(),2)
-    rec['change_mid'] = round(subset['change'].quantile(0.5),2)
-    rec['change_avg'] = round(subset['change'].mean(),2)
-    rec['max_grow'] = subset[subset.eval('change> 9')].shape[0]
-    rec['max_drop'] = subset[subset.eval('change<-9')].shape[0]
-    rec['win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
+    if subset.shape[0]>0:
+        rec['price_mid']  = round(subset['close'].quantile(0.5),2)
+        rec['price_avg']  = round(subset['close'].mean(),2)
+        rec['change_mid'] = round(subset['change'].quantile(0.5),2)
+        rec['change_avg'] = round(subset['change'].mean(),2)
+        rec['max_grow'] = subset[subset.eval('change> 9')].shape[0]
+        rec['max_drop'] = subset[subset.eval('change<-9')].shape[0]
+        rec['win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
     processed_days.value += 1
     print("\rExtract trade days feature: {:>5.2f}% ({:04d}/{})  Date: {}".format(
         round(processed_days.value/total_trade_days*100,2),
