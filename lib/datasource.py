@@ -136,13 +136,13 @@ class DataSource(object):
             i = 0
             for trade_date in trade_days.index:
                 subset = dataset[dataset.eval("date=='{}'".format(trade_date))]
-                trade_days.iloc[trade_date,'price_mid']  = subset['close'].quantile(0.5)
-                trade_days.iloc[trade_date,'price_avg']  = subset['close'].mean()
-                trade_days.iloc[trade_date,'change_mid'] = subset['change'].quantile(0.5)
-                trade_days.iloc[trade_date,'change_avg'] = subset['change'].mean()
-                trade_days.iloc[trade_date,'win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
-                trade_days.iloc[trade_date,'max_grow'] = subset[subset.eval('change> 9')].shape[0]
-                trade_days.iloc[trade_date,'max_drop'] = subset[subset.eval('change<-9')].shape[0]
+                trade_days.loc[trade_date,'price_mid']  = subset['close'].quantile(0.5)
+                trade_days.loc[trade_date,'price_avg']  = subset['close'].mean()
+                trade_days.loc[trade_date,'change_mid'] = subset['change'].quantile(0.5)
+                trade_days.loc[trade_date,'change_avg'] = subset['change'].mean()
+                trade_days.loc[trade_date,'win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
+                trade_days.loc[trade_date,'max_grow'] = subset[subset.eval('change> 9')].shape[0]
+                trade_days.loc[trade_date,'max_drop'] = subset[subset.eval('change<-9')].shape[0]
                 i+=1
                 print("\rExtract Trade Date Feature: {:>5.2f}% ({:04d}/{})  Date:{}".format(
                     round(i/trade_days.shape[0]*100,2), i, trade_days.shape[0], trade_date
