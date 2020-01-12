@@ -21,7 +21,7 @@ class DataSource(object):
                                             skiprows=1,
                                             names=headers,
                                             dtype=types_dict,
-                                            parse_dates=True)
+                                            parse_dates=False)
             print("{:d} records".format(DATASET.shape[0]))
             return DATASET
 
@@ -29,7 +29,7 @@ class DataSource(object):
             # generate date list
             if os.path.isfile(DEFAULT_TRADEDATE):
                 print("Loading trading days: \t",end="")
-                trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=True,
+                trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
                                                            index_col='date')
             else:
                 print("Extract trading days: \t",end="")
@@ -47,7 +47,7 @@ class DataSource(object):
             if os.path.isfile(DEFAULT_SECURITYLIST):
                 print("Loading security list: \t",end="")
                 types_dict={"symbol":str}
-                security_list = pd.read_csv(DEFAULT_SECURITYLIST,parse_dates=True,
+                security_list = pd.read_csv(DEFAULT_SECURITYLIST,parse_dates=False,
                                                               dtype=types_dict)
                 security_list = security_list.set_index('symbol')
             else:
@@ -83,7 +83,7 @@ class DataSource(object):
                 print("Loading featured data: \t",end="")
                 types_dict={"symbol":str}
                 featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
-                                                parse_dates=True,
+                                                parse_dates=False,
                                                 index_col=0,
                                                 dtype=types_dict)
                 print("{} records".format(featured_dataset.shape[0]))
@@ -176,7 +176,7 @@ def _processExtractTradeDaysFeatures(data):
     global featured_dataset, processed_days, total_trade_days
     trade_date = data[0]
     rec = data[1]
-    subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date.date()))]
+    subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date))]
     rec['price_mid']  = round(subset['close'].quantile(0.5),2)
     rec['price_avg']  = round(subset['close'].mean(),2)
     rec['change_mid'] = round(subset['change'].quantile(0.5),2)
