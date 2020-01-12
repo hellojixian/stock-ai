@@ -129,27 +129,23 @@ class DataSource(object):
                     featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                     security_list.to_csv(DEFAULT_SECURITYLIST)
 
-            print("{} records".format(featured_dataset.shape[0]))
+                print("{} records".format(featured_dataset.shape[0]))
             return featured_dataset
 
         def _extractTradeDaysFeatrues(dataset,trade_days):
-            i = 0
-            for trade_date in trade_days.index:
-                subset = dataset[dataset.eval("date=='{}'".format(trade_date))]
-                trade_days.loc[trade_date,'price_mid']  = subset['close'].quantile(0.5)
-                trade_days.loc[trade_date,'price_avg']  = subset['close'].mean()
-                trade_days.loc[trade_date,'change_mid'] = subset['change'].quantile(0.5)
-                trade_days.loc[trade_date,'change_avg'] = subset['change'].mean()
-                trade_days.loc[trade_date,'win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
-                trade_days.loc[trade_date,'max_grow'] = subset[subset.eval('change> 9')].shape[0]
-                trade_days.loc[trade_date,'max_drop'] = subset[subset.eval('change<-9')].shape[0]
-                i+=1
-                print("\rExtract Trade Date Feature: {:>5.2f}% ({:04d}/{})  Date:{}".format(
-                    round(i/trade_days.shape[0]*100,2), i, trade_days.shape[0], trade_date
-                ))
+            global featured_dataset,processed_days,total_trade_days
+            processed_days   = mp.Value('i', 0)
+            total_trade_days = trade_days.shape[0]
+            featured_dataset = dataset
+
+            days = trade_days.index
+            pool = mp.Pool(mp.cpu_count())
+            res  = pool.map(_processExtractTradeDaysFeatures, trade_days.iterrows())
             print("")
+            trade_days = pd.DataFrame(res)
             trade_days = trade_days.dropna()
             trade_days = trade_days.sort_index(ascending=True)
+            trade_days.index.name = 'date'
             trade_days.to_csv(DEFAULT_TRADEDATE)
             print(trade_days)
             return trade_days
@@ -160,6 +156,25 @@ class DataSource(object):
         featured_dataset = _extractSecurityFeatures(security_list)
         trade_days = _extractTradeDaysFeatrues(featured_dataset,trade_days)
         return trade_days, security_list
+
+def _processExtractTradeDaysFeatures(data):
+    global featured_dataset, processed_days, total_trade_days
+    trade_date = data[0]
+    rec = data[1]
+    subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date.date()))]
+    rec['price_mid']  = subset['close'].quantile(0.5)
+    rec['price_avg']  = subset['close'].mean()
+    rec['change_mid'] = subset['change'].quantile(0.5)
+    rec['change_avg'] = subset['change'].mean()
+    rec['max_grow'] = subset[subset.eval('change> 9')].shape[0]
+    rec['max_drop'] = subset[subset.eval('change<-9')].shape[0]
+    rec['win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
+    processed_days.value += 1
+    print("\rExtract trade days feature: {:>5.2f}% ({:04d}/{})  Date: {}".format(
+        round(processed_days.value/total_trade_days*100,2),
+        processed_days.value, total_trade_days, trade_date.date()
+    ), end="")
+    return rec
 
 def _processExtractFeatures(subset):
     def _find_trend(values):
