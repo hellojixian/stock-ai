@@ -86,7 +86,7 @@ class DataSource(object):
                                                 parse_dates=True,
                                                 index_col=0,
                                                 dtype=types_dict)
-                print("{} Records".format(featured_dataset.shape[0]))
+                print("{} records".format(featured_dataset.shape[0]))
             else:
                 featured_dataset = pd.DataFrame()
 
@@ -106,24 +106,30 @@ class DataSource(object):
                 remaining_list_split = np.array_split(remaining_list,
                                     round(remaining_list.shape[0] / chunk_size))
 
-                pool = mp.Pool(mp.cpu_count())
                 for chunk in remaining_list_split:
                     data_list = []
+                    idx = 0
                     for symbol,rec in chunk.iterrows():
+                        idx+=1
+                        print("\rPreparing dataset: {:5.2f}% ({:03d}/{})  Symbol: {}".format(
+                            round(idx/chunk.shape[0]*100,2), idx,
+                            chunk.shape[0],
+                            symbol), end="")
                         security_list.loc[symbol,'processed']=1
                         subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
                         data_list.append(subset)
-
+                    print("")
+                    pool = mp.Pool(mp.cpu_count())
                     res = pool.map(_processExtractFeatures, data_list)
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
 
-                    print("\nSaving Progress: {} Records".format(featured_dataset.shape[0]))
+                    print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
                     featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                     security_list.to_csv(DEFAULT_SECURITYLIST)
 
-            print("{} Records".format(featured_dataset.shape[0]))
+            print("{} records".format(featured_dataset.shape[0]))
 
         dataset = _loadDataset()
         trade_days = _loadTradeDays()
@@ -153,6 +159,25 @@ def _processExtractFeatures(subset):
         pos = np.round(pos,2)
         return pos
 
+    def _find_dropdays(values):
+        values = list(values)
+        values.reverse()
+        days=0
+        for v in values:
+            if v<=0:
+                days +=1
+            else:
+                break
+        return days
+
+    def _find_lossrate(values):
+        values = list(values)
+        total = len(values)
+        days = 0
+        for v in values:
+            if v<=0: days+=1
+        return round(days/total,2)
+
     subset = subset.copy()
     subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
     subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
@@ -161,7 +186,9 @@ def _processExtractFeatures(subset):
         subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
     for i in [250]:
         subset['pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
-
+    for i in [10]:
+        subset['drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
+        subset['lossr_{}'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
     subset = subset.dropna()
 
     # print progress
