@@ -102,8 +102,8 @@ class DataSource(object):
                 processed_secuirties = mp.Value('i', prev_completed)
                 total_secuirties = security_list.shape[0]
 
-                chunk_size = 300
-                remaining_list_split = np.array_split(remaining_list, 
+                chunk_size = 500
+                remaining_list_split = np.array_split(remaining_list,
                                     round(remaining_list.shape[0] / chunk_size))
 
                 pool = mp.Pool(mp.cpu_count())
