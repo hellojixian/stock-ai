@@ -1,6 +1,7 @@
 import datetime
 import pandas as pd
 import numpy as np
+import multiprocessing as mp
 import math, sys, os
 
 DEFAULT_DATAFILE = "data/stock_data/cn_prices.csv"
@@ -83,6 +84,7 @@ class DataSource(object):
                 types_dict={"symbol":str}
                 featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
                                                 parse_dates=True,
+                                                index_col=0,
                                                 dtype=types_dict)
                 print("{} Records".format(featured_dataset.shape[0]))
             else:
@@ -90,70 +92,82 @@ class DataSource(object):
 
             if "processed" not in security_list.columns: security_list["processed"]=0
             # hard reset processed state
-            # security_list["processed"]=0
+            security_list["processed"]=0
 
             prev_completed = security_list[security_list.eval("processed==1")].shape[0]
             remaining_list = security_list[security_list.eval("processed==0")]
             if remaining_list.shape[0]>0:
                 print("Extracting features: \t",end="\n")
-                i=prev_completed
-                for symbol in remaining_list.index:
-                    i+=1
-                    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
-                    featured_subset = _extractFeatures(subset)
-                    # update processed progress
-                    security_list.loc[symbol,'processed']=1
-                    featured_dataset = featured_dataset.append(featured_subset,sort=False)
-                    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
-                        round(i/security_list.shape[0]*100,2),i,security_list.shape[0],
-                        symbol, subset.shape[0]), end="")
-                    # save processed progress
-                    if i%100 ==0:
-                        security_list.to_csv(DEFAULT_SECURITYLIST)
-                        featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
-                print("")
-                featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
+                global processed_secuirties,total_secuirties
+                processed_secuirties = mp.Value('i', prev_completed)
+                total_secuirties = security_list.shape[0]
 
-                print("{} Records".format(featured_dataset.shape[0]))
+                chunks = 30
+                remaining_list_split = np.array_split(remaining_list,chunks)
 
-            return
+                pool = mp.Pool(mp.cpu_count())
+                for chunk in remaining_list_split:
+                    data_list = []
+                    for symbol,rec in chunk.iterrows():
+                        security_list.loc[symbol,'processed']=1
+                        subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
+                        data_list.append(subset)
 
-        def _extractFeatures(subset):
-            def _find_trend(values):
-                values = list(values)
-                p_min, p_max = np.min(values), np.max(values)
-                p_min_idx, p_max_idx = values.index(p_min), values.index(p_max)
-                # down trend
-                trend = math.nan
-                if p_max_idx >= p_min_idx:
-                    # up trend
-                    trend = 1
-                elif p_max_idx < p_min_idx:
-                    trend = 0
-                return trend
+                    res = pool.map(_processExtractFeatures, data_list)
+                    chunk_res = pd.concat(res)
+                    featured_dataset = featured_dataset.append(chunk_res,sort=False)
+                    featured_dataset = featured_dataset.drop_duplicates()
 
-            def _find_pos(values):
-                values = list(values)
-                close = values[-1]
-                p_min, p_max = np.min(values), np.max(values)
-                pos = (close - p_min) / (p_max - p_min) * 100
-                pos = np.round(pos,2)
-                return pos
+                    security_list.to_csv(DEFAULT_SECURITYLIST)
+                    featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
+                    print("\nSave Progress: {} Records".format(featured_dataset.shape[0]))
 
-            subset = subset.copy()
-            subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
-            subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
-            subset['amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
-            for i in [5,10,30,60]:
-                subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
-            for i in [250]:
-                subset['pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
-
-            subset = subset.dropna()
-            return subset
+            print("{} Records".format(featured_dataset.shape[0]))
 
         dataset = _loadDataset()
         trade_days = _loadTradeDays()
         security_list = _loadSecuirtyList()
         featured_dataset = _extractSecurityFeatures(security_list)
         return trade_days, security_list
+
+def _processExtractFeatures(subset):
+    def _find_trend(values):
+        values = list(values)
+        p_min, p_max = np.min(values), np.max(values)
+        p_min_idx, p_max_idx = values.index(p_min), values.index(p_max)
+        # down trend
+        trend = math.nan
+        if p_max_idx >= p_min_idx:
+            # up trend
+            trend = 1
+        elif p_max_idx < p_min_idx:
+            trend = 0
+        return trend
+
+    def _find_pos(values):
+        values = list(values)
+        close = values[-1]
+        p_min, p_max = np.min(values), np.max(values)
+        pos = (close - p_min) / (p_max - p_min) * 100
+        pos = np.round(pos,2)
+        return pos
+
+    subset = subset.copy()
+    subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
+    subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
+    subset['amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
+    for i in [5,10,30,60]:
+        subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
+    for i in [250]:
+        subset['pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
+
+    subset = subset.dropna()
+
+    # print progress
+    global processed_secuirties,total_secuirties
+    processed_secuirties.value+=1
+    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
+            round(processed_secuirties.value/total_secuirties*100,2),
+            processed_secuirties.value, total_secuirties,
+            subset['symbol'].iloc[0], subset.shape[0]), end="")
+    return subset
