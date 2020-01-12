@@ -187,7 +187,7 @@ def _processExtractTradeDaysFeatures(data):
     processed_days.value += 1
     print("\rExtract trade days feature: {:>5.2f}% ({:04d}/{})  Date: {}".format(
         round(processed_days.value/total_trade_days*100,2),
-        processed_days.value, total_trade_days, trade_date.date()
+        processed_days.value, total_trade_days, trade_date
     ), end="")
     return rec
 
