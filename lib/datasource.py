@@ -131,10 +131,33 @@ class DataSource(object):
 
             print("{} records".format(featured_dataset.shape[0]))
 
+        def _extractTradeDaysFeatrues(dataset,trade_days):
+            i = 0
+            for trade_date in trade_days.index:
+                subset = dataset[dataset.eval("date=='{}'".format(trade_date))]
+                trade_days.iloc[trade_date,'price_mid']  = subset['close'].quantile(0.5)
+                trade_days.iloc[trade_date,'price_avg']  = subset['close'].mean()
+                trade_days.iloc[trade_date,'change_mid'] = subset['change'].quantile(0.5)
+                trade_days.iloc[trade_date,'change_avg'] = subset['change'].mean()
+                trade_days.iloc[trade_date,'win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
+                trade_days.iloc[trade_date,'max_grow'] = subset[subset.eval('change> 9')].shape[0]
+                trade_days.iloc[trade_date,'max_drop'] = subset[subset.eval('change<-9')].shape[0]
+                i+=1
+                print("\rExtract Trade Date Feature: {:>5.2f}% ({:04d}/{})  Date:{}".format(
+                    round(i/trade_days.shape[0]*100,2), i, trade_days.shape[0], trade_date
+                ))
+            print("")
+            trade_days = trade_days.dropna()
+            trade_days = trade_days.sort_index(ascending=True)
+            trade_days.to_csv(DEFAULT_TRADEDATE)
+            print(trade_days)
+            return trade_days
+
         dataset = _loadDataset()
         trade_days = _loadTradeDays()
         security_list = _loadSecuirtyList()
         featured_dataset = _extractSecurityFeatures(security_list)
+        trade_days = _extractTradeDaysFeatrues(featured_dataset,trade_days)
         return trade_days, security_list
 
 def _processExtractFeatures(subset):
@@ -184,7 +207,7 @@ def _processExtractFeatures(subset):
     subset['amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
     for i in [5,10,30,60]:
         subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
-    for i in [250]:
+    for i in [10,30,250]:
         subset['pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
     for i in [10]:
         subset['drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
