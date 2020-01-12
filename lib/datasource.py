@@ -72,6 +72,7 @@ class DataSource(object):
                 security_list = security_list.sort_index(ascending=True)
                 security_list.index.name = 'symbol'
                 security_list.to_csv(DEFAULT_SECURITYLIST)
+                print("")
 
             print("{:d} securities".format(security_list.shape[0]))
             return security_list
