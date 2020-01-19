@@ -63,6 +63,11 @@ Self Learning AI system for automatic trading
 ### 调仓逻辑
 根据损失中位数决定每次触发时候的仓位设置
 
+### 估算压力位和支撑位并配合力度
+其实还是判断每一个下一日的涨跌概率
+如果持仓且有盈利则持仓观望
+回落止损
+
 ## 代码结构
 lib.KnowledgeBase
   - load

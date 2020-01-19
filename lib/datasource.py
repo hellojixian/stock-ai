@@ -236,6 +236,9 @@ def _processExtractFeatures(subset):
     subset = subset.copy()
     subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
     subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
+    subset['open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
+    subset['down_line'] = round((subset['close'] - subset['low']) / subset['close'] * 100, 2)
+    subset['up_line']   = round((subset['close'] - subset['high']) / subset['close'] * 100, 2)
     subset['amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
     for i in [5,10,30,60]:
         subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
