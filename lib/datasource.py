@@ -11,72 +11,76 @@ DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
 DATASET = None
 
 class DataSource(object):
-    def preload(datafile=DEFAULT_DATAFILE):
-        def _loadDataset():
-            global DATASET
-            print("Loading data file: \t",end="")
+    def loadTradeDays():
+        # generate date list
+        if os.path.isfile(DEFAULT_TRADEDATE):
+            print("Loading trading days: \t",end="")
+            trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
+                                                       index_col='date')
+        else:
+            if DATASET is None: DataSource.loadDataset()
+            print("Extract trading days: \t",end="")
+            trade_days=DATASET[['date','symbol']].groupby(['date']).count()
+            trade_days['symbols'] = trade_days['symbol']
+            trade_days['processed'] = 0
+            trade_days = trade_days[['symbols']]
+            trade_days = trade_days.sort_index(ascending=True)
+            trade_days.to_csv(DEFAULT_TRADEDATE)
+        print("{:d} days".format(trade_days.shape[0]))
+        return trade_days
+
+    def loadSecuirtyList():
+        # generate security list
+        if os.path.isfile(DEFAULT_SECURITYLIST):
+            print("Loading security list: \t",end="")
             types_dict={"symbol":str}
-            headers = ["symbol","date","open","high","low","close","volume","amount"]
-            DATASET = pd.read_csv(datafile, header=None,
-                                            skiprows=1,
-                                            names=headers,
-                                            dtype=types_dict,
-                                            parse_dates=False)
-            print("{:d} records".format(DATASET.shape[0]))
-            return DATASET
+            security_list = pd.read_csv(DEFAULT_SECURITYLIST,parse_dates=False,
+                                                          dtype=types_dict)
+            security_list = security_list.set_index('symbol')
+        else:
+            if DATASET is None: DataSource.loadDataset()
+            print("Extract security list: \t",end="")
+            security_list = DATASET[['date','symbol']].groupby(['symbol']).count()
+            security_list.index = security_list.index.astype('str')
+            security_list['days'] = security_list['date']
+            security_list['start_date'] = ""
+            security_list['end_date'] = ""
+            security_list['processed'] = 0
+            security_list = security_list[['days']]
+            print("")
 
-        def _loadTradeDays():
-            # generate date list
-            if os.path.isfile(DEFAULT_TRADEDATE):
-                print("Loading trading days: \t",end="")
-                trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
-                                                           index_col='date')
-            else:
-                print("Extract trading days: \t",end="")
-                trade_days=DATASET[['date','symbol']].groupby(['date']).count()
-                trade_days['symbols'] = trade_days['symbol']
-                trade_days['processed'] = 0
-                trade_days = trade_days[['symbols']]
-                trade_days = trade_days.sort_index(ascending=True)
-                trade_days.to_csv(DEFAULT_TRADEDATE)
-            print("{:d} days".format(trade_days.shape[0]))
-            return trade_days
+            global processed_secuirties,total_secuirties
+            processed_secuirties   = mp.Value('i', 0)
+            total_secuirties = security_list.shape[0]
 
-        def _loadSecuirtyList():
-            # generate security list
-            if os.path.isfile(DEFAULT_SECURITYLIST):
-                print("Loading security list: \t",end="")
-                types_dict={"symbol":str}
-                security_list = pd.read_csv(DEFAULT_SECURITYLIST,parse_dates=False,
-                                                              dtype=types_dict)
-                security_list = security_list.set_index('symbol')
-            else:
-                print("Extract security list: \t",end="")
-                security_list = DATASET[['date','symbol']].groupby(['symbol']).count()
-                security_list.index = security_list.index.astype('str')
-                security_list['days'] = security_list['date']
-                security_list['start_date'] = ""
-                security_list['end_date'] = ""
-                security_list['processed'] = 0
-                security_list = security_list[['days']]
-                print("")
+            pool = mp.Pool(mp.cpu_count())
+            res  = pool.map(_processExtractSecurityData, security_list.iterrows())
+            security_list = pd.DataFrame(res)
+            security_list = security_list.dropna()
+            security_list = security_list.sort_index(ascending=True)
+            security_list.index.name = 'symbol'
+            security_list.to_csv(DEFAULT_SECURITYLIST)
+            print("")
 
-                global processed_secuirties,total_secuirties
-                processed_secuirties   = mp.Value('i', 0)
-                total_secuirties = security_list.shape[0]
+        print("{:d} securities".format(security_list.shape[0]))
+        return security_list
 
-                pool = mp.Pool(mp.cpu_count())
-                res  = pool.map(_processExtractSecurityData, security_list.iterrows())
-                security_list = pd.DataFrame(res)
-                security_list = security_list.dropna()
-                security_list = security_list.sort_index(ascending=True)
-                security_list.index.name = 'symbol'
-                security_list.to_csv(DEFAULT_SECURITYLIST)
-                print("")
+    def loadDataset(datafile=None):
+        global DATASET
+        if datafile is None: datafile = DEFAULT_DATAFILE
 
-            print("{:d} securities".format(security_list.shape[0]))
-            return security_list
+        print("Loading data file: \t",end="")
+        types_dict={"symbol":str}
+        headers = ["symbol","date","open","high","low","close","volume","amount"]
+        DATASET = pd.read_csv(datafile, header=None,
+                                        skiprows=1,
+                                        names=headers,
+                                        dtype=types_dict,
+                                        parse_dates=False)
+        print("{:d} records".format(DATASET.shape[0]))
+        return DATASET
 
+    def preload(datafile=DEFAULT_DATAFILE):
         def _extractSecurityFeatures(security_list):
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
@@ -149,12 +153,43 @@ class DataSource(object):
             trade_days.to_csv(DEFAULT_TRADEDATE)
             return trade_days
 
-        dataset = _loadDataset()
-        trade_days = _loadTradeDays()
-        security_list = _loadSecuirtyList()
+        dataset = loadDataset()
+        trade_days = loadTradeDays()
+        security_list = loadSecuirtyList()
         featured_dataset = _extractSecurityFeatures(security_list)
         trade_days = _extractTradeDaysFeatrues(featured_dataset,trade_days)
         return trade_days, security_list
+
+    def loadFeaturedData(symbol, start_date=None, end_date=None):
+        global featured_dataset
+        types_dict={"symbol":str}
+        subset = None
+        cache_file = "data/cache/featured/{}_{}_{}.csv".format(symbol,start_date,end_date)
+        if os.path.isfile(cache_file):
+            subset = pd.read_csv(cache_file,parse_dates=False,
+                                            index_col=0,
+                                            dtype=types_dict)
+        else:
+            if not os.path.isfile(DEFAULT_FEATURED_DATA):
+                DataSource.preload()
+
+            print("Loading featured data: \t",end="")
+            featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
+                                            parse_dates=False,
+                                            index_col=0,
+                                            dtype=types_dict)
+            print("{} records".format(featured_dataset.shape[0]))
+
+            query = "symbol=='{}'".format(symbol)
+            if start_date is not None:
+                query = query + " and date>='{}'".format(start_date)
+            if end_date is not None:
+                query = query + " and date<='{}'".format(end_date)
+
+            subset = featured_dataset[featured_dataset.eval(query)]
+            subset.to_csv(cache_file)
+        return subset
+
 
 def _processExtractSecurityData(data):
     global DATASET, processed_secuirties, total_secuirties
