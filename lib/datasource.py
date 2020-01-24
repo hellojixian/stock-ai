@@ -153,9 +153,9 @@ class DataSource(object):
             trade_days.to_csv(DEFAULT_TRADEDATE)
             return trade_days
 
-        dataset = loadDataset()
-        trade_days = loadTradeDays()
-        security_list = loadSecuirtyList()
+        dataset = DataSource.loadDataset()
+        trade_days = DataSource.loadTradeDays()
+        security_list = DataSource.loadSecuirtyList()
         featured_dataset = _extractSecurityFeatures(security_list)
         trade_days = _extractTradeDaysFeatrues(featured_dataset,trade_days)
         return trade_days, security_list
