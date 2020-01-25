@@ -8,14 +8,16 @@ from lib.backtest import backtest as bt
 
 test = bt(init_fund=100000)
 test.buy(symbol='600001', price=10, amount=1000)
-print(test.positions, test.cash, test.getValue())
+print(test.positions, test.getCash(), test.getValue())
+
 test.buy(symbol='600001', price=8, amount=500)
-print(test.positions, test.cash, test.getValue())
+print(test.positions, test.getCash(), test.getValue())
 
 test.buy(symbol='600002', price=80, amount=500)
-print(test.positions, test.cash, test.getValue())
+print(test.positions, test.getCash(), test.getValue())
 
 test.sell(symbol='600001', price=12, amount=700)
-print(test.positions, test.cash, test.getValue())
+print(test.positions, test.getCash(), test.getValue())
+
 test.sell(symbol='600001', price=11)
-print(test.positions, test.cash, test.getValue())
+print(test.positions, test.getCash(), test.getValue())

@@ -11,13 +11,14 @@ class backtest:
 
     def buy(self, symbol, price, amount):
         cost = (price * amount * (1+self.buy_commission))
-        if self.cash < cost: return self.cash
+        if self.cash < cost:
+            raise Exception('No enough cash')
 
         self.cash -= cost
         if symbol not in self.positions:
             self.positions[symbol]={
                 'amount': amount,
-                'cost': price,
+                'cost': price
             }
         else:
             original_amount = self.positions[symbol]['amount']
@@ -28,7 +29,9 @@ class backtest:
         return self.cash
 
     def sell(self, symbol, price, amount=None):
-        if symbol not in self.positions: return self.cash
+        if symbol not in self.positions:
+            raise Exception('Not have the symbol in positions')
+
         if amount is None or \
            amount>self.positions[symbol]['amount']: amount = self.positions[symbol]['amount']
 
@@ -46,14 +49,14 @@ class backtest:
             new_cost = (original_amount*original_cost - price*amount) / new_amount
             self.positions[symbol]['amount'] = new_amount
             self.positions[symbol]['cost'] = new_cost
-        self.cash = round(self.cash,3)
+        self.cash = round(self.cash,2)
         return self.cash
 
     def getCash(self):
-        return self.cash
+        return round(self.cash,3)
 
     def getValue(self):
         value = self.cash
         for symbol in self.positions:
             value += self.positions[symbol]['amount'] * self.positions[symbol]['cost']
-        return value
+        return round(value,2)
