@@ -52,10 +52,10 @@ class backtest:
         self.cash = round(self.cash,2)
         return self.cash
 
-    def getCash(self):
+    def get_cash(self):
         return round(self.cash,3)
 
-    def getValue(self):
+    def get_value(self):
         value = self.cash
         for symbol in self.positions:
             value += self.positions[symbol]['amount'] * self.positions[symbol]['cost']
