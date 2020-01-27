@@ -24,7 +24,7 @@ class strategy:
         self.reset()
         return
 
-    def parse_dna(dna):
+    def parse_dna(self,dna):
         batch_settings = [
             [1],
             [0.3,0.7],
@@ -35,6 +35,7 @@ class strategy:
             [0.2,0.5,0.3],
             [0.3,0.3,0.4]
         ]
+
         self.buy_batch_id       = dna[0]
         self.bug_bbands_weight  = dna[1]
         self.bug_drop_weight    = dna[2]
@@ -56,10 +57,9 @@ class strategy:
         self.stop_win_rate       = dna[16]
         self.stop_win_days       = dna[17]
 
+        self.buy_batchs = batch_settings[self.buy_batch_id]
         self.buy_threshold  = 10
         self.sell_threshold = 10
-
-        self.buy_batchs = batch_settings[self.buy_batch_id]
         return
 
     def reset(self):
@@ -82,7 +82,7 @@ class strategy:
         return
 
     def buy_amount(self, price):
-        if self.buy_current_batch+1 >= len(self.buy_batchs) return 0
+        if self.buy_current_batch+1 >= len(self.buy_batchs): return 0
         self.buy_current_batch+=1
         ratio = self.buy_batchs[self.buy_current_batch]
         limited_cash = self.test.get_value() * ratio

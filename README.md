@@ -81,3 +81,7 @@ lib.DataSource
 lib.DynamicPositionProcessor
 
 lib.GALearner
+
+2% 严格止损
+试探仓小于5% 主力仓15% 准主力仓 备用仓
+50%以上才加仓

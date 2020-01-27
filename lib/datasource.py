@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
+from .feature_extract import featureExtractor as fe
 import math, sys, os
 
 DEFAULT_DATAFILE = "data/stock_data/cn_prices.csv"
@@ -187,6 +188,7 @@ class DataSource(object):
                 query = query + " and date<='{}'".format(end_date)
 
             subset = featured_dataset[featured_dataset.eval(query)]
+            subset = fe.processData(subset)
             subset.to_csv(cache_file)
         return subset
 
