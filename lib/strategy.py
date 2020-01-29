@@ -13,12 +13,18 @@
 '''
 
 from lib.backtest import backtest as bt
+import sys
 
 INIT_FUND = 100000
 MIN_BUY_UNIT = 100
+DNA_LEN = 26
+MAX_BUY_DELAY_DAYS = 5
+MAX_SELL_DELAY_DAYS = 5
 
 class strategy:
     def __init__(self, dna):
+        if len(dna)!=DNA_LEN:
+            raise Exception("DNA Length mismatched, expected {} got {}".format(DNA_LEN, len(dna)))
         self.test = bt(init_fund=INIT_FUND)
         self.parse_dna(dna)
         self.reset()
@@ -27,70 +33,195 @@ class strategy:
     def parse_dna(self,dna):
         batch_settings = [
             [1],
+            [0.8],
             [0.3,0.7],
             [0.4,0.6],
             [0.5,0.5],
+            [0.1,0.2,0.5],
             [0.1,0.3,0.6],
             [0.2,0.3,0.5],
             [0.2,0.5,0.3],
             [0.3,0.3,0.4]
         ]
 
-        self.buy_batch_id       = dna[0]
-        self.bug_bbands_weight  = dna[1]
-        self.bug_drop_weight    = dna[2]
-        self.bug_trend_weight   = dna[3]
-        self.bug_support_weight = dna[4]
-        self.bug_kdj_weight     = dna[5]
-        self.bug_macd_weight    = dna[6]
-        self.buy_delay          = dna[7]
+        self.buy_batch_id           = int(dna[0]*0.5*len(batch_settings)-1)
+        self.buy_bbands_weight      = dna[1]
+        self.buy_drop_weight        = dna[2]
+        self.buy_trend5_weight      = dna[3]
+        self.buy_trend10_weight     = dna[4]
+        self.buy_trend30_weight     = dna[5]
+        self.buy_trend60_weight     = dna[6]
+        self.buy_pos10_weight       = dna[7]
+        self.buy_pos30_weight       = dna[8]
+        self.buy_pos250_weight      = dna[9]
+        self.buy_support_weight     = dna[10]
+        self.buy_kdj_weight         = dna[11]
+        self.buy_macd_weight        = dna[12]
+        self.buy_delay              = dna[13]
 
-        self.sell_bbands_weight  = dna[8]
-        self.sell_drop_weight    = dna[9]
-        self.sell_trend_weight   = dna[10]
-        self.sell_support_weight = dna[11]
-        self.sell_kdj_weight     = dna[12]
-        self.sell_macd_weight    = dna[13]
-        self.sell_delay          = dna[14]
+        self.sell_bbands_weight     = dna[14]
+        self.sell_drop_weight       = dna[15]
+        self.sell_trend5_weight     = dna[16]
+        self.sell_trend10_weight    = dna[17]
+        self.sell_pos10_weight      = dna[18]
+        self.sell_support_weight    = dna[19]
+        self.sell_kdj_weight        = dna[20]
+        self.sell_macd_weight       = dna[21]
+        self.sell_delay             = dna[22]
 
-        self.stop_loss_rate      = dna[15]
-        self.stop_win_rate       = dna[16]
-        self.stop_win_days       = dna[17]
+        self.stop_loss_rate         = dna[23]*0.05
+        self.stop_win_rate          = dna[24]*0.05
+        self.stop_win_days          = int(dna[25]*10)
 
         self.buy_batchs = batch_settings[self.buy_batch_id]
-        self.buy_threshold  = 10
-        self.sell_threshold = 10
+        self.buy_threshold  = 6
+        self.sell_threshold = 4
+        self.session_log = []
         return
 
     def reset(self):
         self.position = 0 #当前仓位
         self.buy_current_batch = 0
+        self.session = None
+
+        self.reset_buy_delay()
+        self.reset_sell_delay()
+        return
+
+    def reset_buy_delay(self):
+        self.buy_delay_observing = False
+        self.buy_cheaper_than = 0
+        self.buy_delay_days = 0
+        return
+
+    def reset_sell_delay(self):
+        self.sell_delay_observing = False
+        self.sell_higher_than = 0
+        self.sell_delay_days = 0
         return
 
     def backtest(self, symbol,dataset):
         for idx,record in dataset.iterrows():
             price = record['close']
+            if self.session is not None: self.session['days']+=1
 
-            if self.should_sell(record):
+            if record['symbol'] in self.test.positions and self.should_sell(record):
                 self.test.sell(symbol, price=price)
+                self.session['end_fund'] = self.test.get_cash()
+                self.session['change'] = round((self.session['end_fund'] - self.session['init_fund'])/self.session['init_fund']*100,3)
+                self.session['end_date'] = record['date']
+                self.session['log'].append({"date":record['date'],
+                                            "action":"sell",
+                                            "symbol":symbol,
+                                            "session": self.session['change'],
+                                            "value":self.test.get_value()})
+                self.session_log.append(self.session)
                 self.reset()
 
             if self.test.get_cash() > MIN_BUY_UNIT*price and self.should_buy(record):
                 amount = self.buy_amount(price)
-                self.position = 0.5
-                self.test.buy(symbol, price=price, amount=amount)
+                if amount>0:
+                    if record['symbol'] not in self.test.positions:
+                        self.session = {
+                            "init_fund": self.test.get_cash(),
+                            "start_date": record['date'],
+                            "days": 0,
+                            "log": [] }
+                    self.test.buy(symbol, price=price, amount=amount)
+                    self.session['log'].append({"date":record['date'],
+                                                "action":"buy ",
+                                                "symbol":symbol,
+                                                "value":self.test.get_value()})
+
         return
 
     def buy_amount(self, price):
-        if self.buy_current_batch+1 >= len(self.buy_batchs): return 0
-        self.buy_current_batch+=1
+        if self.buy_current_batch >= len(self.buy_batchs): return 0
         ratio = self.buy_batchs[self.buy_current_batch]
         limited_cash = self.test.get_value() * ratio
         amount = int(limited_cash / (price*100))
+        amount = (amount -1 )*100
+        self.buy_current_batch+=1
         return amount
 
     def should_buy(self, record):
-        return
+        decsion = False
+        if self.buy_delay_observing:
+            self.buy_delay_days +=1
+            if self.buy_delay_days > MAX_BUY_DELAY_DAYS: self.reset_buy_delay()
+            if record['close'] <= self.buy_cheaper_than:
+                decsion = True
+                self.reset_buy_delay()
+        else:
+            score = 0
+            score += record['bb_score']     *  self.buy_bbands_weight
+            score += record['drop_score']   *  self.buy_drop_weight
+            score += record['trend_5']      *  self.buy_trend5_weight
+            score += record['trend_10']     *  self.buy_trend10_weight
+            score += record['trend_30']     *  self.buy_trend30_weight
+            score += record['trend_60']     *  self.buy_trend60_weight
+            score += record['pos_10']/100   *  self.buy_pos10_weight
+            score += record['pos_30']/100   *  self.buy_pos30_weight
+            score += record['pos_250']/100  *  self.buy_pos250_weight
+            score += record['support_score']*  self.buy_support_weight
+            score += record['kdj_score']    *  self.buy_kdj_weight
+            score += record['macd_score']   *  self.buy_macd_weight
+
+
+            if score>= self.buy_threshold:
+                if self.buy_delay==1:
+                    self.buy_delay_observing = True
+                    self.buy_delay_days = 0
+                    self.buy_cheaper_than = record['close']
+                    decsion = False
+                else:
+                    decsion = True
+        return decsion
 
     def should_sell(self, record):
-        return
+        decsion = False
+
+        symbol = record['symbol']
+        if symbol in self.test.positions:
+            # 处理止盈止损
+            if self.session['days']>=self.stop_win_days:
+                self.session['end_type'] = 'stop_holding'
+                return True
+            cost = self.test.positions[symbol]['cost']
+            price = record['close']
+            change = ( price - cost ) / cost
+            if change >= self.stop_win_rate:
+                self.session['end_type'] = 'stop_win'
+                return True
+            if change <= -self.stop_loss_rate:
+                self.session['end_type'] = 'stop_loss'
+                return True
+
+
+        if self.sell_delay_observing:
+            self.sell_delay_days +=1
+            if self.sell_delay_days > MAX_SELL_DELAY_DAYS: self.reset_sell_delay()
+            if record['close'] >= self.sell_higher_than:
+                decsion = True
+                self.reset_sell_delay()
+        else:
+            score = 0
+            score += (1-record['bb_score'])     *  self.sell_bbands_weight
+            score += (1-record['drop_score'])   *  self.sell_drop_weight
+            score += (1-record['trend_5'])      *  self.sell_trend5_weight
+            score += (1-record['trend_10'])     *  self.sell_trend10_weight
+            score += (1-record['pos_10']/100)   *  self.sell_pos10_weight
+            score += (1-record['support_score'])*  self.sell_support_weight
+            score += (1-record['kdj_score'])    *  self.sell_kdj_weight
+            score += (1-record['macd_score'])   *  self.sell_macd_weight
+
+            if score>= self.sell_threshold:
+                self.session['end_type'] = 'regular'
+                if self.sell_delay==1:
+                    self.sell_delay_observing = True
+                    self.sell_delay_days = 0
+                    self.sell_cheaper_than = record['close']
+                    decsion = False
+                else:
+                    decsion = True
+        return decsion

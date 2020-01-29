@@ -5,9 +5,14 @@ class featureExtractor:
         dataset = featureExtractor.calculateKDJ(dataset)
         dataset = featureExtractor.calculateBBands(dataset)
         dataset = featureExtractor.calculateMACD(dataset)
+        dataset = featureExtractor.calculateDrop(dataset)
         dataset = featureExtractor.calculateSupport(dataset)
         # 清理数据
         dataset = dataset.dropna()
+        return dataset
+
+    def calculateDrop(dataset):
+        dataset['drop_score'] = dataset['drop_days']/10
         return dataset
 
     def calculateKDJ(dataset):

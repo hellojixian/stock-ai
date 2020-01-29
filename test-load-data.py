@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
-import warnings
+
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
 
+import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 np.random.seed(5)
@@ -19,7 +20,7 @@ symbol, start_date, end_date = sample.name, sample.start_date, sample.end_date
 
 days    = ds.loadTradeDays()
 dataset = ds.loadFeaturedData(symbol, start_date, end_date)
-# dataset = fe.processData(dataset)
+dataset = fe.processData(dataset)
 
 # 观察数据
 print("symbol: {:s}".format(symbol))

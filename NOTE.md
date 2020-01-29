@@ -1,2 +1,40 @@
 #数据分组的问题
 按主要特征对数据分组 先看看样本分布如何
+
+symbol                 002041
+date               2006-12-19
+open                   1.7549
+high                   1.7549
+low                    1.6661
+close                  1.7066
+volume                4386589
+amount               38578597
+bar                     -2.75
+change                  -2.75
+open_jump                   0
+down_line                2.37
+up_line                 -2.83
+amp                      5.06
+trend_5                     0
+trend_10                    1
+trend_30                    1
+trend_60                    0
+pos_10                  20.27
+pos_30                  73.68
+pos_250                 11.95
+drop_days                   4
+lossr_10                  0.6
+kdj_j                 2.62425
+kdj_j_move          -0.884665
+kdj_j_move_prev     -0.593045
+kdj_score            0.135571
+bb_pos                   0.49
+bb_scope                0.159
+bb_score               0.2226
+macd_dif                0.022
+macd_dea                0.012
+macd_bar                0.018
+macd_score              0.518
+mid_price             1.72063
+support_score        0.846784
+Name: 7096624, dtype: object
