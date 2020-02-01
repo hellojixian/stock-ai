@@ -26,12 +26,6 @@ class learn(object):
         self.load()
         return
 
-    def init_mp_pool(self):
-        global POOL, processed_DNA, pbar
-        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
-        processed_DNA = mp.Value('i', 0)
-        return
-
     def reset(self):
         self.pop = []
         self.pop_size = POP_SIZE
@@ -105,7 +99,10 @@ class learn(object):
 
     def evolve(self, training_sets, validation_sets):
         global POOL
+        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
+        processed_DNA = mp.Value('i', 0)
         POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
+        
         self.training_sets = training_sets
         self.validation_sets = validation_sets
         self.kill_bad(self.make_kids())
