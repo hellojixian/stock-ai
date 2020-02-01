@@ -132,13 +132,13 @@ class DataSource(object):
                         subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
                         data_list.append(subset)
                     print("")
-                    
+
                     def init_globals(arg1,arg2):
                         global processed_secuirties, total_secuirties
                         processed_secuirties, total_secuirties = arg1,arg2
                         return
                     pool = mp.Pool(mp.cpu_count(),initializer=init_globals, initargs=(processed_secuirties, total_secuirties))
-                    res = pool.map(_processExtractFeatures, data_list))
+                    res = pool.map(_processExtractFeatures, data_list)
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
