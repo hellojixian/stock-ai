@@ -15,12 +15,13 @@ MAX_PROCESSES=16
 
 class DataSource(object):
     def loadTradeDays():
+        global DATASET
         # generate date list
         if os.path.isfile(DEFAULT_TRADEDATE):
             print("Loading trading days: \t",end="")
             trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
                                                        index_col='date')
-        else:
+        else:            
             if DATASET is None: DATASET = DataSource.loadDataset()
             print("Extract trading days: \t",end="")
             trade_days=DATASET[['date','symbol']].groupby(['date']).count()
@@ -285,7 +286,7 @@ def _processExtractFeatures(symbol):
             if v<=0: days+=1
         return round(days/total,2)
 
-    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))].copy()    
+    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))].copy()
     subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
     subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
     subset['open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
