@@ -65,7 +65,7 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        global POOL        
+        global POOL
         res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
 
@@ -74,6 +74,7 @@ class learn(object):
     def _evaluate_dna_mp(self, DNA):
         datasets = self.training_sets
         result = self.evaluate_dna(DNA=DNA, datasets=datasets)
+        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
         with processed_DNA.get_lock():
             processed_DNA.value+=1
             pbar.update(processed_DNA.value)
@@ -94,9 +95,8 @@ class learn(object):
 
     def evolve(self, training_sets, validation_sets):
         global POOL
-        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
         processed_DNA = mp.Value('i', 0)
-        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
+        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(None,processed_DNA))
 
         self.training_sets = training_sets
         self.validation_sets = validation_sets
