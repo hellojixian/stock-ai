@@ -68,15 +68,18 @@ class learn(object):
         global POOL
         res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
+        print("")
         return v
 
     def _evaluate_dna_mp(self, DNA):
         datasets = self.training_sets
         result = self.evaluate_dna(DNA=DNA, datasets=datasets)
         with processed_DNA.get_lock():
-            pbar = progressbar.ProgressBar(max_value=pbar_size)
+            # pbar = progressbar.ProgressBar(max_value=pbar_size)
             processed_DNA.value+=1
-            pbar.update(processed_DNA.value)
+            # pbar.update(processed_DNA.value)
+            print("\rLearning Progress: {:>5.2f}% {}/{}".format(
+            round(processed_DNA/pbar_size*100,2), processed_DNA,pbar_size),end="")
         return result
 
     def evaluate_dna(self, DNA, datasets=None):
