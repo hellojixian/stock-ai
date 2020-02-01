@@ -13,9 +13,9 @@ DNA_LEN = 26
 MUT_STRENGTH = 0.03
 POOL = None
 
-def _init_globals(bar, counter):
-    global pbar,processed_DNA
-    pbar = bar
+def _init_globals(bar_size, counter):
+    global pbar_size,processed_DNA
+    pbar_size = bar_size
     processed_DNA  = counter
     return
 
@@ -65,10 +65,11 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        global POOL
+        global POOL, pbar
+        pbar = progressbar.ProgressBar(max_value=pbar_size)
         res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
-
+        del pbar
         return v
 
     def _evaluate_dna_mp(self, DNA):
@@ -95,8 +96,7 @@ class learn(object):
     def evolve(self, training_sets, validation_sets):
         global POOL
         processed_DNA = mp.Value('i', 0)
-        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
-        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
+        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
 
         self.training_sets = training_sets
         self.validation_sets = validation_sets
