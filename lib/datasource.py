@@ -11,6 +11,7 @@ DEFAULT_TRADEDATE = "data/cache/trade_date.csv"
 DEFAULT_SECURITYLIST = "data/cache/security_list.csv"
 DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
 DATASET = None
+MAX_PROCESSES=16
 
 class DataSource(object):
     def loadTradeDays():
@@ -63,6 +64,7 @@ class DataSource(object):
             security_list = security_list.sort_index(ascending=True)
             security_list.index.name = 'symbol'
             security_list.to_csv(DEFAULT_SECURITYLIST)
+            pool.close()
             print("")
 
         print("{:d} securities".format(security_list.shape[0]))
@@ -117,7 +119,7 @@ class DataSource(object):
 
                 pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET, processed_secuirties, total_secuirties))
                 for chunk in remaining_list_split:
-                    data_list = []
+                    symbol_list = []
                     idx = 0
                     for symbol,rec in chunk.iterrows():
                         idx+=1
@@ -126,11 +128,10 @@ class DataSource(object):
                             chunk.shape[0],
                             symbol), end="")
                         security_list.loc[symbol,'processed']=1
-                        subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
-                        data_list.append(subset)
+                        symbol_list.append(symbol)
                     print("")
 
-                    res = pool.map(_processExtractFeatures, data_list)
+                    res = pool.map(_processExtractFeatures, symbol_list)
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
@@ -138,7 +139,7 @@ class DataSource(object):
                     print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
                     featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                     security_list.to_csv(DEFAULT_SECURITYLIST)
-
+                pool.close()
                 print("{} records".format(featured_dataset.shape[0]))
             return featured_dataset
 
@@ -148,7 +149,7 @@ class DataSource(object):
             featured_dataset = dataset
 
             days = trade_days.index
-            pool = mp.Pool(mp.cpu_count(),initializer=_init_globals2, initargs=(featured_dataset, processed_days, total_trade_days))
+            pool = mp.Pool(min(mp.cpu_count(),MAX_PROCESSES),initializer=_init_globals2, initargs=(featured_dataset, processed_days, total_trade_days))
             res  = pool.map(_processExtractTradeDaysFeatures, trade_days.iterrows())
             print("")
             trade_days = pd.DataFrame(res)
@@ -156,6 +157,7 @@ class DataSource(object):
             trade_days = trade_days.sort_index(ascending=True)
             trade_days.index.name = 'date'
             trade_days.to_csv(DEFAULT_TRADEDATE)
+            pool.close()
             return trade_days
 
         dataset = DataSource.loadDataset()
@@ -242,7 +244,7 @@ def _processExtractTradeDaysFeatures(data):
         ), end="")
     return rec
 
-def _processExtractFeatures(subset):
+def _processExtractFeatures(symbol):
     def _find_trend(values):
         values = list(values)
         p_min, p_max = np.min(values), np.max(values)
@@ -283,7 +285,7 @@ def _processExtractFeatures(subset):
             if v<=0: days+=1
         return round(days/total,2)
 
-    subset = subset.copy()
+    subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))].copy()    
     subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
     subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
     subset['open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
