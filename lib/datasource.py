@@ -91,7 +91,7 @@ class DataSource(object):
         def _extractSecurityFeatures(security_list):
             global DATASET
             if DATASET is None: DATASET = DataSource.loadDataset()
-            
+
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
                 print("Loading featured data: \t",end="")
@@ -205,6 +205,7 @@ class DataSource(object):
 def _processExtractSecurityData(data):
     global DATASET, processed_secuirties, total_secuirties
     if DATASET is None: DATASET = DataSource.loadDataset()
+    if total_secuirties == 0: total_secuirties=len(DataSource.loadSecuirtyList())
 
     symbol = data[0]
     rec = data[1]
@@ -300,6 +301,7 @@ def _processExtractFeatures(subset):
     # print progress
     global processed_secuirties,total_secuirties
     processed_secuirties.value+=1
+    if total_secuirties == 0: total_secuirties=len(DataSource.loadSecuirtyList())
     if len(subset)>0:
         print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
                 round(processed_secuirties.value/total_secuirties*100,2),
