@@ -65,7 +65,7 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        global POOL, pbar
+        global POOL, pbar, pbar_size
         pbar = progressbar.ProgressBar(max_value=pbar_size)
         res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
