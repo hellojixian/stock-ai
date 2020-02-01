@@ -14,6 +14,8 @@ if __name__ == "__main__":
     DATASET = None
     processed_secuirties   = mp.Value('i', 0)
     total_secuirties = 0
+else:
+    DATASET = DataSource.loadDataset()
 
 class DataSource(object):
     def loadTradeDays():
@@ -24,7 +26,7 @@ class DataSource(object):
             trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
                                                        index_col='date')
         else:
-            if DATASET is None: DataSource.loadDataset()
+            if DATASET is None: DATASET = DataSource.loadDataset()
             print("Extract trading days: \t",end="")
             trade_days=DATASET[['date','symbol']].groupby(['date']).count()
             trade_days['symbols'] = trade_days['symbol']
