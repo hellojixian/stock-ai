@@ -310,5 +310,6 @@ def _processExtractFeatures(subset):
                 subset['symbol'].iloc[0], subset.shape[0]), end="")
     return subset
 
-if __name__ != "__main__":    
+if __name__ != "__main__":
     DATASET = DataSource.loadDataset()
+    total_secuirties=len(DataSource.loadSecuirtyList())
