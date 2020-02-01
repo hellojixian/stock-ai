@@ -56,7 +56,7 @@ class DataSource(object):
             processed_secuirties = mp.Value('i', 0)
             total_secuirties = security_list.shape[0]
 
-            pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET,processed_secuirties,total_secuirties,))
+            pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET,processed_secuirties,total_secuirties))
             res  = pool.map(_processExtractSecurityData, security_list.iterrows())
             security_list = pd.DataFrame(res)
             security_list = security_list.dropna()
@@ -128,7 +128,7 @@ class DataSource(object):
                         data_list.append(subset)
                     print("")
 
-                    pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET, processed_secuirties, total_secuirties,))
+                    pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET, processed_secuirties, total_secuirties))
                     res = pool.map(_processExtractFeatures, data_list)
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
@@ -147,7 +147,7 @@ class DataSource(object):
             featured_dataset = dataset
 
             days = trade_days.index
-            pool = mp.Pool(mp.cpu_count(),initializer=_init_globals2, initargs=(featured_dataset, processed_days, total_trade_days,))
+            pool = mp.Pool(mp.cpu_count(),initializer=_init_globals2, initargs=(featured_dataset, processed_days, total_trade_days))
             res  = pool.map(_processExtractTradeDaysFeatures, trade_days.iterrows())
             print("")
             trade_days = pd.DataFrame(res)
@@ -197,7 +197,7 @@ class DataSource(object):
 
 def _init_globals(arg1,arg2,arg3):
     global DATASET,processed_secuirties, total_secuirties
-    DATASET,processed_secuirties, total_secuirties = arg1,arg1,arg2
+    DATASET,processed_secuirties, total_secuirties = arg1,arg2,arg2
     return
 
 def _init_globals2(arg1,arg2,arg3):
