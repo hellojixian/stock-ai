@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
+import itertools
 from .feature_extract import featureExtractor as fe
 import math, sys, os
 
@@ -9,15 +10,10 @@ DEFAULT_DATAFILE = "data/stock_data/cn_prices.csv"
 DEFAULT_TRADEDATE = "data/cache/trade_date.csv"
 DEFAULT_SECURITYLIST = "data/cache/security_list.csv"
 DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
-
-if __name__ == "__main__":
-    DATASET = None
-    processed_secuirties   = mp.Value('i', 0)
-    total_secuirties = 0
+DATASET = None
 
 class DataSource(object):
     def loadTradeDays():
-        global DATASET
         # generate date list
         if os.path.isfile(DEFAULT_TRADEDATE):
             print("Loading trading days: \t",end="")
@@ -45,7 +41,8 @@ class DataSource(object):
                                                           dtype=types_dict)
             security_list = security_list.set_index('symbol')
         else:
-            if DATASET is None: DataSource.loadDataset()
+            if DATASET is None: DATASET = DataSource.loadDataset()
+
             print("Extract security list: \t",end="")
             security_list = DATASET[['date','symbol']].groupby(['symbol']).count()
             security_list.index = security_list.index.astype('str')
@@ -56,12 +53,15 @@ class DataSource(object):
             security_list = security_list[['days']]
             print("")
 
-            global processed_secuirties,total_secuirties
-            processed_secuirties   = mp.Value('i', 0)
+            processed_secuirties = mp.Value('i', 0)
             total_secuirties = security_list.shape[0]
 
-            # pool = mp.Pool(mp.cpu_count())
-            pool = mp.Pool(4)
+            def init_globals(arg1,arg2,arg3):
+                global DATASET,processed_secuirties,total_secuirties
+                DATASET,processed_secuirties,total_secuirties = arg1,arg2,arg3
+                return
+
+            pool = mp.Pool(mp.cpu_count(),initializer=init_globals, initargs=(DATASET,processed_secuirties,total_secuirties))
             res  = pool.map(_processExtractSecurityData, security_list.iterrows())
             security_list = pd.DataFrame(res)
             security_list = security_list.dropna()
@@ -90,7 +90,6 @@ class DataSource(object):
 
     def preload(datafile=DEFAULT_DATAFILE):
         def _extractSecurityFeatures(security_list):
-            global DATASET
             if DATASET is None: DATASET = DataSource.loadDataset()
 
             #Extract features
@@ -113,7 +112,6 @@ class DataSource(object):
             remaining_list = security_list[security_list.eval("processed==0")]
             if remaining_list.shape[0]>0:
                 print("Extracting features: \t",end="\n")
-                global processed_secuirties,total_secuirties
                 processed_secuirties = mp.Value('i', prev_completed)
                 total_secuirties = security_list.shape[0]
 
@@ -134,8 +132,13 @@ class DataSource(object):
                         subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))]
                         data_list.append(subset)
                     print("")
-                    pool = mp.Pool(mp.cpu_count())
-                    res = pool.map(_processExtractFeatures, data_list)
+                    
+                    def init_globals(arg1,arg2):
+                        global processed_secuirties, total_secuirties
+                        processed_secuirties, total_secuirties = arg1,arg2
+                        return
+                    pool = mp.Pool(mp.cpu_count(),initializer=init_globals, initargs=(processed_secuirties, total_secuirties))
+                    res = pool.map(_processExtractFeatures, data_list))
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
@@ -148,13 +151,18 @@ class DataSource(object):
             return featured_dataset
 
         def _extractTradeDaysFeatrues(dataset,trade_days):
-            global featured_dataset,processed_days,total_trade_days
             processed_days   = mp.Value('i', 0)
             total_trade_days = trade_days.shape[0]
             featured_dataset = dataset
 
             days = trade_days.index
             pool = mp.Pool(mp.cpu_count())
+            def init_globals(arg1,arg2,arg3):
+                global featured_dataset, processed_days, total_trade_days
+                featured_dataset, processed_days, total_trade_days = arg1,arg2,arg3
+                return
+
+            pool = mp.Pool(mp.cpu_count(),initializer=init_globals, initargs=(featured_dataset, processed_days, total_trade_days))
             res  = pool.map(_processExtractTradeDaysFeatures, trade_days.iterrows())
             print("")
             trade_days = pd.DataFrame(res)
@@ -204,10 +212,6 @@ class DataSource(object):
 
 
 def _processExtractSecurityData(data):
-    global DATASET, processed_secuirties, total_secuirties
-    if DATASET is None: DATASET = DataSource.loadDataset()
-    if total_secuirties == 0: total_secuirties=len(DataSource.loadSecuirtyList())
-
     symbol = data[0]
     rec = data[1]
 
@@ -215,15 +219,15 @@ def _processExtractSecurityData(data):
     subset = subset.sort_values(by=['date'],ascending=True)
     rec['start_date'] = subset['date'].iloc[0]
     rec['end_date'] = subset['date'].iloc[-1]
-    processed_secuirties.value+=1
 
-    print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Start: {}   End: {}".format(
-        round(processed_secuirties.value/total_secuirties*100,2),processed_secuirties.value,total_secuirties,
-        symbol, rec['start_date'], rec['end_date']), end="")
+    with processed_secuirties.get_lock():
+        processed_secuirties.value+=1
+        print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Start: {}   End: {}".format(
+            round(processed_secuirties.value/total_secuirties*100,2),processed_secuirties.value,total_secuirties,
+            symbol, rec['start_date'], rec['end_date']), end="")
     return rec
 
 def _processExtractTradeDaysFeatures(data):
-    global featured_dataset, processed_days, total_trade_days
     trade_date = data[0]
     rec = data[1]
     subset = featured_dataset[featured_dataset.eval("date=='{}'".format(trade_date))]
@@ -235,11 +239,12 @@ def _processExtractTradeDaysFeatures(data):
         rec['max_grow'] = subset[subset.eval('change> 9')].shape[0]
         rec['max_drop'] = subset[subset.eval('change<-9')].shape[0]
         rec['win_rate'] = round(subset[subset.eval('change>=0')].shape[0] / subset.shape[0],2)
-    processed_days.value += 1
-    print("\rExtract trade days feature: {:>5.2f}% ({:04d}/{})  Date: {}".format(
-        round(processed_days.value/total_trade_days*100,2),
-        processed_days.value, total_trade_days, trade_date
-    ), end="")
+    with processed_days.get_lock():
+        processed_days.value += 1
+        print("\rExtract trade days feature: {:>5.2f}% ({:04d}/{})  Date: {}".format(
+            round(processed_days.value/total_trade_days*100,2),
+            processed_days.value, total_trade_days, trade_date
+        ), end="")
     return rec
 
 def _processExtractFeatures(subset):
@@ -300,16 +305,11 @@ def _processExtractFeatures(subset):
     subset = subset.dropna()
 
     # print progress
-    global processed_secuirties,total_secuirties
-    processed_secuirties.value+=1
-    if total_secuirties == 0: total_secuirties=len(DataSource.loadSecuirtyList())
-    if len(subset)>0:
-        print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
-                round(processed_secuirties.value/total_secuirties*100,2),
-                processed_secuirties.value, total_secuirties,
-                subset['symbol'].iloc[0], subset.shape[0]), end="")
+    with processed_secuirties.get_lock():
+        processed_secuirties.value+=1
+        if len(subset)>0:
+            print("\rProgress: {:>5.2f}% ({:04d}/{})  Symbol: {}   Records: {}".format(
+                    round(processed_secuirties.value/total_secuirties*100,2),
+                    processed_secuirties.value, total_secuirties,
+                    subset['symbol'].iloc[0], subset.shape[0]), end="")
     return subset
-
-if __name__ != "__main__":
-    DATASET = DataSource.loadDataset()
-    total_secuirties=len(DataSource.loadSecuirtyList())
