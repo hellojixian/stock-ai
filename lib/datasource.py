@@ -10,7 +10,7 @@ DEFAULT_TRADEDATE = "data/cache/trade_date.csv"
 DEFAULT_SECURITYLIST = "data/cache/security_list.csv"
 DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
 
-DATASET = DataSource.loadDataset()
+DATASET = None
 processed_secuirties   = mp.Value('i', 0)
 total_secuirties = 0
 
@@ -90,6 +90,8 @@ class DataSource(object):
     def preload(datafile=DEFAULT_DATAFILE):
         def _extractSecurityFeatures(security_list):
             global DATASET
+            if DATASET is None: DATASET = DataSource.loadDataset()
+            
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
                 print("Loading featured data: \t",end="")
@@ -202,7 +204,7 @@ class DataSource(object):
 
 def _processExtractSecurityData(data):
     global DATASET, processed_secuirties, total_secuirties
-    # DATASET = DataSource.loadDataset()
+    if DATASET is None: DATASET = DataSource.loadDataset()
 
     symbol = data[0]
     rec = data[1]
