@@ -10,9 +10,10 @@ DEFAULT_TRADEDATE = "data/cache/trade_date.csv"
 DEFAULT_SECURITYLIST = "data/cache/security_list.csv"
 DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
 
-DATASET = None
-processed_secuirties   = mp.Value('i', 0)
-total_secuirties = 0
+if __name__ == "__main__":
+    DATASET = None
+    processed_secuirties   = mp.Value('i', 0)
+    total_secuirties = 0
 
 class DataSource(object):
     def loadTradeDays():
