@@ -197,7 +197,7 @@ class DataSource(object):
 
 def _init_globals(arg1,arg2,arg3):
     global DATASET,processed_secuirties, total_secuirties
-    DATASET,processed_secuirties, total_secuirties = arg1,arg2,arg2
+    DATASET,processed_secuirties, total_secuirties = arg1,arg2,arg3
     return
 
 def _init_globals2(arg1,arg2,arg3):
