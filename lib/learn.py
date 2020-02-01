@@ -11,10 +11,7 @@ MAX_POP_SIZE = 20
 NEW_KIDS = 60 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.03
-
 POOL = None
-processed_DNA = None
-pbar = None
 
 def _init_globals(bar, counter):
     global pbar,processed_DNA
