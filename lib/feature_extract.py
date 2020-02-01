@@ -18,7 +18,9 @@ class featureExtractor:
     def calculateKDJ(dataset):
         #计算KDJ的J值和移动方向
         dataset = dataset.copy()
-        slowk, slowd = talib.STOCH(dataset['high'], dataset['low'], dataset['close'],
+        slowk, slowd = talib.STOCH(dataset['high'].values,
+                                    dataset['low'].values,
+                                    dataset['close'].values,
                                 fastk_period=5, slowk_period=3,
                                 slowk_matype=0, slowd_period=3,
                                 slowd_matype=0)
@@ -35,7 +37,7 @@ class featureExtractor:
         # 计算布林带
         dataset = dataset.copy()
         upper, middle, lower = talib.BBANDS(
-                        dataset['close'],
+                        dataset['close'].values,
                         timeperiod=20,
                         # number of non-biased standard deviations from the mean
                         nbdevup=2,
@@ -54,7 +56,7 @@ class featureExtractor:
 
     def calculateMACD(dataset):
         dataset = dataset.copy()
-        dif, dea, hist = talib.MACD(dataset['close'],
+        dif, dea, hist = talib.MACD(dataset['close'].values,
                                     fastperiod=12,
                                     slowperiod=26,
                                     signalperiod=9)
