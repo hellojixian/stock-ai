@@ -115,6 +115,7 @@ class DataSource(object):
                 remaining_list_split = np.array_split(remaining_list,
                                     round(remaining_list.shape[0] / chunk_size))
 
+                pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET, processed_secuirties, total_secuirties))
                 for chunk in remaining_list_split:
                     data_list = []
                     idx = 0
@@ -129,7 +130,6 @@ class DataSource(object):
                         data_list.append(subset)
                     print("")
 
-                    pool = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(DATASET, processed_secuirties, total_secuirties))
                     res = pool.map(_processExtractFeatures, data_list)
                     chunk_res = pd.concat(res)
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
