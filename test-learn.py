@@ -22,7 +22,7 @@ if __name__ == "__main__":
                         help='how many generations for each batch of learning')
 
     parser.add_argument('--training-set-size',
-                        default=5, type=int,
+                        default=10, type=int,
                         help='how many data samples for each batch of learning')
     args = vars(parser.parse_args())
 
@@ -61,6 +61,7 @@ if __name__ == "__main__":
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
             print(report)
         ml.save()
+        del ml
 
         print("-"*100)
         print("\n")

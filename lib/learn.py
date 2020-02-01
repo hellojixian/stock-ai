@@ -12,11 +12,30 @@ NEW_KIDS = 60 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.03
 
+POOL = None
+
+def _init_globals(pbar_size):
+    global pbar,processed_DNA
+    pbar = progressbar.ProgressBar(max_value=pbar_size)
+    processed_DNA   = mp.Value('i', 0)
+    return
+
 class learn(object):
     def __init__(self):
         self.settings_filename = os.path.join('data','knowledgebase','settings.json')
         self.reset()
         self.load()
+        self.init_mp_pool()
+        return
+
+    def __del__():
+        global POOL
+        POOL.close()
+        return
+
+    def init_mp_pool(self):
+        global POOL
+        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,))
         return
 
     def reset(self):
@@ -58,20 +77,23 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        global pbar,processed_DNA
-        pbar = progressbar.ProgressBar(max_value=len(dna_series))
-        processed_DNA   = mp.Value('i', 0)
-        pool = mp.Pool(mp.cpu_count())
-        res = pool.map(self._evaluate_dna_mp,dna_series)
+        global POOL
+        with processed_DNA.get_lock():
+            processed_DNA.value = 0
+            pbar.max_value = len(dna_series)
+            pbar.update(0)
+
+        res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
+
         return v
 
     def _evaluate_dna_mp(self, DNA):
-        global pbar,processed_DNA
         datasets = self.training_sets
         result = self.evaluate_dna(DNA=DNA, datasets=datasets)
-        processed_DNA.value+=1
-        pbar.update(processed_DNA.value)
+        with processed_DNA.get_lock():
+            processed_DNA.value+=1
+            pbar.update(processed_DNA.value)
         return result
 
     def evaluate_dna(self, DNA, datasets=None):

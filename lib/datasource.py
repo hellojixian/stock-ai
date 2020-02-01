@@ -137,7 +137,10 @@ class DataSource(object):
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
 
-                    print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
+                    # if the computer is fast enough, there is no need to save progress at all
+                    # print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
+                    # featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
+                    # security_list.to_csv(DEFAULT_SECURITYLIST)
                 featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                 security_list.to_csv(DEFAULT_SECURITYLIST)
                 pool.close()
