@@ -13,6 +13,7 @@ DATASET = None
 
 class DataSource(object):
     def loadTradeDays():
+        global DATASET
         # generate date list
         if os.path.isfile(DEFAULT_TRADEDATE):
             print("Loading trading days: \t",end="")
@@ -31,6 +32,7 @@ class DataSource(object):
         return trade_days
 
     def loadSecuirtyList():
+        global DATASET
         # generate security list
         if os.path.isfile(DEFAULT_SECURITYLIST):
             print("Loading security list: \t",end="")
@@ -82,6 +84,7 @@ class DataSource(object):
         return DATASET
 
     def preload(datafile=DEFAULT_DATAFILE):
+        global DATASET
         def _extractSecurityFeatures(security_list):
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
