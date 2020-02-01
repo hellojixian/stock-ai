@@ -198,6 +198,8 @@ class DataSource(object):
 
 def _processExtractSecurityData(data):
     global DATASET, processed_secuirties, total_secuirties
+    DATASET = DataSource.loadDataset()
+
     symbol = data[0]
     rec = data[1]
 
