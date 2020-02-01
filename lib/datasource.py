@@ -11,6 +11,8 @@ DEFAULT_SECURITYLIST = "data/cache/security_list.csv"
 DEFAULT_FEATURED_DATA = "data/cache/featured_data.csv"
 DATASET = None
 
+processed_secuirties   = mp.Value('i', 0)
+
 class DataSource(object):
     def loadTradeDays():
         global DATASET
@@ -56,7 +58,8 @@ class DataSource(object):
             processed_secuirties   = mp.Value('i', 0)
             total_secuirties = security_list.shape[0]
 
-            pool = mp.Pool(mp.cpu_count())
+            # pool = mp.Pool(mp.cpu_count())
+            pool = mp.Pool(4)
             res  = pool.map(_processExtractSecurityData, security_list.iterrows())
             security_list = pd.DataFrame(res)
             security_list = security_list.dropna()
