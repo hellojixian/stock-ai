@@ -1,13 +1,14 @@
-import os, sys
+import os, sys, json
 import numpy as np
 import pandas as pd
 import progressbar
+import multiprocessing as mp
 
 from .strategy import strategy as stg
 
-POP_SIZE = 40
+POP_SIZE = 40 #40
 MAX_POP_SIZE = 20
-NEW_KIDS = 60
+NEW_KIDS = 60 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.05
 
@@ -57,13 +58,21 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        v = np.zeros(len(dna_series))
-        bar = progressbar.ProgressBar(max_value=len(dna_series))
-        for i in range(len(dna_series)):
-            bar.update(i+1)
-            score = self.evaluate_dna(dna_series[i])
-            v[i]=score
+        global pbar,processed_DNA
+        pbar = progressbar.ProgressBar(max_value=len(dna_series))
+        processed_DNA   = mp.Value('i', 0)
+        pool = mp.Pool(mp.cpu_count())
+        res = pool.map(self._evaluate_dna_mp,dna_series)
+        v = np.array(res)
         return v
+
+    def _evaluate_dna_mp(self, DNA):
+        global pbar,processed_DNA
+        datasets = self.training_sets
+        result = self.evaluate_dna(DNA=DNA, datasets=datasets)
+        processed_DNA.value+=1
+        pbar.update(processed_DNA.value)
+        return result
 
     def evaluate_dna(self, DNA, datasets=None):
         if datasets is None: datasets = self.training_sets
@@ -75,7 +84,7 @@ class learn(object):
             report = mystg.backtest(symbol, training_set)
             scores.append(report['profit'])
             del mystg
-        score = np.mean(scores)
+        score = round(np.mean(scores),4)
         return score
 
     def evolve(self, training_sets, validation_sets):
@@ -111,14 +120,14 @@ class learn(object):
         if os.path.isfile(self.settings_filename):
             with open(self.settings_filename) as json_file:
                 data = json.load(json_file)
-                self.latest_best_dna = data['learning']['latest_best_dna']
+                self.latest_best_dna = np.array(data['learning']['latest_best_dna'])
                 self.pop = np.array(data['learning']['pop'])
         return
 
     def save(self):
         self.pop = np.round(self.pop,4)
         data = { "learning":{
-                    "latest_best_dna":self.latest_best_dna,
+                    "latest_best_dna":self.latest_best_dna.tolist(),
                     "pop":self.pop.tolist()
                   }
                 }
