@@ -1,4 +1,5 @@
 import talib
+import numpy as np
 
 class featureExtractor:
     def processData(dataset):
