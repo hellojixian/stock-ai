@@ -21,7 +21,7 @@ class DataSource(object):
             print("Loading trading days: \t",end="")
             trade_days = pd.read_csv(DEFAULT_TRADEDATE,parse_dates=False,
                                                        index_col='date')
-        else:            
+        else:
             if DATASET is None: DATASET = DataSource.loadDataset()
             print("Extract trading days: \t",end="")
             trade_days=DATASET[['date','symbol']].groupby(['date']).count()
@@ -138,8 +138,8 @@ class DataSource(object):
                     featured_dataset = featured_dataset.drop_duplicates()
 
                     print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
-                    featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
-                    security_list.to_csv(DEFAULT_SECURITYLIST)
+                featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
+                security_list.to_csv(DEFAULT_SECURITYLIST)
                 pool.close()
                 print("{} records".format(featured_dataset.shape[0]))
             return featured_dataset
