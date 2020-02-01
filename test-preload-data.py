@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import pandas as pd
 import warnings
+import multiprocessing as mp
+
 from lib.datasource import DataSource as ds
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if __name__ == "__main__":
-    freeze_support()
+    mp.freeze_support()
 
     # set output
     pd.set_option('display.max_rows', 500)

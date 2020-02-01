@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import argparse
+import multiprocessing as mp
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
 from lib.backtest import backtest as bt
@@ -9,8 +10,8 @@ from lib.strategy import strategy as stg
 from lib.learn import learn as ln
 
 if __name__ == "__main__":
-    freeze_support()
-    
+    mp.freeze_support()
+
     parser = argparse.ArgumentParser(description='Machine Learning.')
     parser.add_argument('--batch-size',
                         default=100, type=int,

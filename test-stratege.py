@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
-import warnings
+import multiprocessing as mp
+
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
 from lib.backtest import backtest as bt
@@ -11,7 +12,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if __name__ == "__main__":
-    freeze_support()
+    mp.freeze_support()
     np.random.seed(0)
     securities = ds.loadSecuirtyList();
     sample = securities.sample(1).iloc[0]

@@ -2,12 +2,14 @@
 import pandas as pd
 import numpy as np
 import warnings
+import multiprocessing as mp
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
 from lib.backtest import backtest as bt
 
+
 if __name__ == "__main__":
-    freeze_support()
+    mp.freeze_support()
     test = bt(init_fund=100000)
     test.buy(symbol='600001', price=10, amount=1000)
     print(test.positions, test.get_cash(), test.get_value())

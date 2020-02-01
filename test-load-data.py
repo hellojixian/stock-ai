@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
+import multiprocessing as mp
 
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
@@ -9,7 +10,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if __name__ == "__main__":
-    freeze_support()
+    mp.freeze_support()
     np.random.seed(5)
     # set output
     pd.set_option('display.max_rows', 500)
