@@ -13,11 +13,13 @@ DNA_LEN = 26
 MUT_STRENGTH = 0.03
 
 POOL = None
+processed_DNA = None
+pbar = None
 
-def _init_globals(pbar_size):
+def _init_globals(bar, counter):
     global pbar,processed_DNA
-    pbar = progressbar.ProgressBar(max_value=pbar_size)
-    processed_DNA   = mp.Value('i', 0)
+    pbar = bar
+    processed_DNA  = counter
     return
 
 class learn(object):
@@ -34,8 +36,10 @@ class learn(object):
         return
 
     def init_mp_pool(self):
-        global POOL
-        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,))
+        global POOL, processed_DNA, pbar
+        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
+        processed_DNA = mp.Value('i', 0)
+        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
         return
 
     def reset(self):
