@@ -27,21 +27,12 @@ class learn(object):
         self.settings_filename = os.path.join('data','knowledgebase','settings.json')
         self.reset()
         self.load()
-        if __name__ == "__main__":
-            self.init_mp_pool()
-        return
-
-    def __del__(self):
-        if __name__ == "__main__":
-            global POOL
-            POOL.close()
         return
 
     def init_mp_pool(self):
         global POOL, processed_DNA, pbar
         pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
         processed_DNA = mp.Value('i', 0)
-        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
         return
 
     def reset(self):
@@ -116,6 +107,8 @@ class learn(object):
         return score
 
     def evolve(self, training_sets, validation_sets):
+        global POOL
+        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
         self.training_sets = training_sets
         self.validation_sets = validation_sets
         self.kill_bad(self.make_kids())
@@ -128,7 +121,7 @@ class learn(object):
         if self.should_save_knowledge(result):
             self.latest_best_dna=best_dna
             self.save()
-
+        POOL.close()
         return result
 
     def should_save_knowledge(self,result):
