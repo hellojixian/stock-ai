@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
         ml = ln()
         for _ in range(args['step_size']):
-            print("GA Learning step: {}".format(_))
+            print("Batch :{} GA Learning step: {}".format(i,_))
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
             print(report)
         ml.save()
