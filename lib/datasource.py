@@ -14,8 +14,6 @@ if __name__ == "__main__":
     DATASET = None
     processed_secuirties   = mp.Value('i', 0)
     total_secuirties = 0
-else:
-    DATASET = DataSource.loadDataset()
 
 class DataSource(object):
     def loadTradeDays():
@@ -311,3 +309,6 @@ def _processExtractFeatures(subset):
                 processed_secuirties.value, total_secuirties,
                 subset['symbol'].iloc[0], subset.shape[0]), end="")
     return subset
+
+if __name__ != "__main__":    
+    DATASET = DataSource.loadDataset()
