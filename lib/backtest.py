@@ -7,12 +7,14 @@ class backtest:
     def __init__(self, init_fund=10000):
         self._init_fund = init_fund
         self.cash = init_fund
+        self.positions = {}
         return
 
     def buy(self, symbol, price, amount):
         cost = (price * amount * (1+self.buy_commission))
         if self.cash < cost:
-            raise Exception('No enough cash')
+            raise Exception('No enough cash, cash:{}  cost:{}'.format(
+            round(self.cash,2), round(cost,2)))
 
         self.cash -= cost
         if symbol not in self.positions:
@@ -51,6 +53,9 @@ class backtest:
             self.positions[symbol]['cost'] = new_cost
         self.cash = round(self.cash,2)
         return self.cash
+
+    def get_init_fund(self):
+        return self._init_fund
 
     def get_cash(self):
         return round(self.cash,3)

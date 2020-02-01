@@ -14,6 +14,7 @@
 
 from lib.backtest import backtest as bt
 import sys
+import math
 
 INIT_FUND = 100000
 MIN_BUY_UNIT = 100
@@ -28,6 +29,7 @@ class strategy:
         self.test = bt(init_fund=INIT_FUND)
         self.parse_dna(dna)
         self.reset()
+        self.session_log = []
         return
 
     def parse_dna(self,dna):
@@ -72,11 +74,11 @@ class strategy:
         self.stop_loss_rate         = dna[23]*0.05
         self.stop_win_rate          = dna[24]*0.05
         self.stop_win_days          = int(dna[25]*10)
+        # self.patch_buy_rate         = -0.1
 
         self.buy_batchs = batch_settings[self.buy_batch_id]
         self.buy_threshold  = 6
         self.sell_threshold = 4
-        self.session_log = []
         return
 
     def reset(self):
@@ -101,6 +103,7 @@ class strategy:
         return
 
     def backtest(self, symbol,dataset):
+        self.dataset = dataset
         for idx,record in dataset.iterrows():
             price = record['close']
             if self.session is not None: self.session['days']+=1
@@ -133,18 +136,58 @@ class strategy:
                                                 "symbol":symbol,
                                                 "value":self.test.get_value()})
 
-        return
+        return self.evalute_result()
+
+    def evalute_result(self):
+        sessions = len(self.session_log)
+        wins,continue_errs,max_continue_errs = 0,0,0
+        holding_days = 0
+        for session in self.session_log:
+            holding_days += session['days']
+            if session['change']>=0:
+                wins+=1
+                continue_errs=0
+            else:
+                continue_errs+=1
+            if continue_errs>max_continue_errs:
+                max_continue_errs=continue_errs
+
+        win_rate = wins / sessions
+        profit = (self.test.get_value() - self.test.get_init_fund()) / self.test.get_init_fund()
+        baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
+        return {
+            "max_continue_errs": max_continue_errs,
+            "sessions": sessions,
+            "win_rate": round(win_rate,3),
+            "profit": round(profit,3),
+            "baseline": round(baseline,3),
+            "holding_days":holding_days,
+            "holding_days_rate": round(holding_days/self.dataset.shape[0],3)
+        }
 
     def buy_amount(self, price):
         if self.buy_current_batch >= len(self.buy_batchs): return 0
         ratio = self.buy_batchs[self.buy_current_batch]
         limited_cash = self.test.get_value() * ratio
-        amount = int(limited_cash / (price*100))
-        amount = (amount -1 )*100
+        available_cash = self.test.get_cash()*0.95
+        amount = (math.ceil(limited_cash / (price*100)))*100 - 1000
+        if amount * price >= available_cash:
+            amount = math.ceil(available_cash / price) - 1000
+        if amount * price >= available_cash:
+            raise Exception('{} * {}={} > {}'.format(amount, price,amount* price,available_cash))
         self.buy_current_batch+=1
         return amount
 
     def should_buy(self, record):
+        # 补仓逻辑
+        symbol = record['symbol']
+        if symbol in self.test.positions:
+            cost = self.test.positions[symbol]['cost']
+            price = record['close']
+            change = ( price - cost ) / cost
+            if change>=0: return True
+            # if change< self.patch_buy_rate: return True
+
         decsion = False
         if self.buy_delay_observing:
             self.buy_delay_days +=1
@@ -184,6 +227,9 @@ class strategy:
         symbol = record['symbol']
         if symbol in self.test.positions:
             # 处理止盈止损
+            if self.session is None:
+                print(self.test.positions)
+                raise Exception("Session is NONE")
             if self.session['days']>=self.stop_win_days:
                 self.session['end_type'] = 'stop_holding'
                 return True

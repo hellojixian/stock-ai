@@ -188,7 +188,7 @@ class DataSource(object):
                 query = query + " and date<='{}'".format(end_date)
 
             subset = featured_dataset[featured_dataset.eval(query)]
-            subset = fe.processData(subset)
+            if len(subset)>0: subset = fe.processData(subset)
             subset.to_csv(cache_file)
         return subset
 
