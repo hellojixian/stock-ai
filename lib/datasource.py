@@ -84,8 +84,8 @@ class DataSource(object):
         return DATASET
 
     def preload(datafile=DEFAULT_DATAFILE):
-        global DATASET
         def _extractSecurityFeatures(security_list):
+            DATASET = DataSource.loadDataset()
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
                 print("Loading featured data: \t",end="")
