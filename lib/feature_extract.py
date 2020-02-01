@@ -60,9 +60,9 @@ class featureExtractor:
                                     fastperiod=12,
                                     slowperiod=26,
                                     signalperiod=9)
-        dataset.loc[:,'macd_dif'] = round(dif,3)
-        dataset.loc[:,'macd_dea'] = round(dea,3)
-        dataset.loc[:,'macd_bar'] = round(hist*2,3)
+        dataset.loc[:,'macd_dif'] = np.round(dif,3)
+        dataset.loc[:,'macd_dea'] = np.round(dea,3)
+        dataset.loc[:,'macd_bar'] = np.round(hist*2,3)
         vmin, vmax = -0.5, 0.5
         dataset.loc[:,'macd_score'] = (dataset['macd_bar'] - vmin) / (vmax-vmin)
         return dataset
