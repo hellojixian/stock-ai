@@ -28,7 +28,7 @@ class learn(object):
         self.init_mp_pool()
         return
 
-    def __del__():
+    def __del__(self):
         global POOL
         POOL.close()
         return
