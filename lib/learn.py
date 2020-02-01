@@ -95,7 +95,7 @@ class learn(object):
     def evolve(self, training_sets, validation_sets):
         global POOL
         processed_DNA = mp.Value('i', 0)
-        pbar = progressbar.ProgressBar(max_value=pbar_size)
+        pbar = progressbar.ProgressBar(max_value=POP_SIZE+NEW_KIDS)
         POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(pbar,processed_DNA))
 
         self.training_sets = training_sets
