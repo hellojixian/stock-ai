@@ -10,7 +10,7 @@ POP_SIZE = 40 #40
 MAX_POP_SIZE = 20
 NEW_KIDS = 60 #60
 DNA_LEN = 26
-MUT_STRENGTH = 0.05
+MUT_STRENGTH = 0.03
 
 class learn(object):
     def __init__(self):
@@ -125,6 +125,7 @@ class learn(object):
         return
 
     def save(self):
+        print('Saving knowledge ...', end="")
         self.pop = np.round(self.pop,4)
         data = { "learning":{
                     "latest_best_dna":self.latest_best_dna.tolist(),
@@ -133,4 +134,5 @@ class learn(object):
                 }
         with open(self.settings_filename, 'w') as outfile:
             json.dump(data, outfile, indent=2)
+        print("[DONE]")
         return

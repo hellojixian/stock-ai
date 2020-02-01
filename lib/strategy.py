@@ -21,6 +21,8 @@ MIN_BUY_UNIT = 100
 DNA_LEN = 26
 MAX_BUY_DELAY_DAYS = 5
 MAX_SELL_DELAY_DAYS = 5
+BUY_THRESHOLD = 10
+SELL_THRESHOLD = 10
 
 class strategy:
     def __init__(self, dna):
@@ -34,8 +36,10 @@ class strategy:
 
     def parse_dna(self,dna):
         batch_settings = [
-            [1],
+            [0.9],
+            [0.5],
             [0.8],
+            [0.2,0.8],
             [0.3,0.7],
             [0.4,0.6],
             [0.5,0.5],
@@ -71,14 +75,13 @@ class strategy:
         self.sell_macd_weight       = dna[21]
         self.sell_delay             = dna[22]
 
-        self.stop_loss_rate         = dna[23]*0.05
-        self.stop_win_rate          = dna[24]*0.05
+        self.stop_loss_rate         = dna[23]*0.10
+        self.stop_win_rate          = dna[24]*0.10
         self.stop_win_days          = int(dna[25]*10)
-        # self.patch_buy_rate         = -0.1
 
         self.buy_batchs = batch_settings[self.buy_batch_id]
-        self.buy_threshold  = 6
-        self.sell_threshold = 4
+        self.buy_threshold  = BUY_THRESHOLD
+        self.sell_threshold = SELL_THRESHOLD
         return
 
     def reset(self):
