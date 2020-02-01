@@ -89,7 +89,7 @@ class learn(object):
 
     def evolve(self, training_sets, validation_sets):
         self.training_sets = training_sets
-        self.validation_sets = training_sets
+        self.validation_sets = validation_sets
         self.kill_bad(self.make_kids())
 
         best_dna = self.pop[-1]
