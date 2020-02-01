@@ -78,7 +78,7 @@ class learn(object):
             # pbar = progressbar.ProgressBar(max_value=pbar_size)
             processed_DNA.value+=1
             # pbar.update(processed_DNA.value)
-            print("\rLearning Progress: {:>5f}% \t({}/{})".format(
+            print("\rLearning Progress: {:>5.1f}% ...\t({}/{})".format(
             round(processed_DNA.value/pbar_size*100), processed_DNA.value,pbar_size),end="")
         return result
 
