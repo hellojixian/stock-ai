@@ -27,7 +27,8 @@ class learn(object):
         self.settings_filename = os.path.join('data','knowledgebase','settings.json')
         self.reset()
         self.load()
-        self.init_mp_pool()
+        if __name__ == "__main__":
+            self.init_mp_pool()
         return
 
     def __del__(self):
