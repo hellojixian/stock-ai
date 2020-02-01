@@ -85,6 +85,7 @@ class DataSource(object):
 
     def preload(datafile=DEFAULT_DATAFILE):
         def _extractSecurityFeatures(security_list):
+            global DATASET
             if DATASET is None: DATASET = DataSource.loadDataset()
 
             #Extract features
