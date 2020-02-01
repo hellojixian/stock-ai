@@ -31,8 +31,9 @@ class learn(object):
         return
 
     def __del__(self):
-        global POOL
-        POOL.close()
+        if __name__ == "__main__":
+            global POOL
+            POOL.close()
         return
 
     def init_mp_pool(self):
