@@ -29,4 +29,6 @@ while len(validation_sets)<5:
     if dataset.shape[0]>0: validation_sets.append(dataset)
 
 ml = ln()
-ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+for _ in range(10):
+    report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+    print(report)

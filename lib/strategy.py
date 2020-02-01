@@ -152,7 +152,8 @@ class strategy:
             if continue_errs>max_continue_errs:
                 max_continue_errs=continue_errs
 
-        win_rate = wins / sessions
+        win_rate = 0
+        if sessions>0: win_rate = wins / sessions
         profit = (self.test.get_value() - self.test.get_init_fund()) / self.test.get_init_fund()
         baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
         return {

@@ -5,7 +5,7 @@ import progressbar
 
 from .strategy import strategy as stg
 
-POP_SIZE = 10
+POP_SIZE = 40
 MAX_POP_SIZE = 20
 NEW_KIDS = 60
 DNA_LEN = 26
@@ -13,7 +13,7 @@ MUT_STRENGTH = 0.05
 
 class learn(object):
     def __init__(self):
-        self.settings_filename = os.path.join('data','settings','cfg_.json')
+        self.settings_filename = os.path.join('data','knowledgebase','settings.json')
         self.reset()
         self.load()
         return
@@ -65,48 +65,63 @@ class learn(object):
             v[i]=score
         return v
 
-    def evaluate_dna(self,DNA):
-        mystg = stg(DNA)
+    def evaluate_dna(self, DNA, datasets=None):
+        if datasets is None: datasets = self.training_sets
         scores = []
-        for training_set in self.training_sets:
+        for training_set in datasets:
+            mystg = stg(DNA)
             if len(training_set)==0: continue
             symbol = training_set.iloc[0]['symbol']
             report = mystg.backtest(symbol, training_set)
             scores.append(report['profit'])
+            del mystg
         score = np.mean(scores)
-        del mystg
         return score
 
-    def evolve(self,training_sets, validation_sets):
+    def evolve(self, training_sets, validation_sets):
         self.training_sets = training_sets
         self.validation_sets = training_sets
         self.kill_bad(self.make_kids())
-        return
+
+        best_dna = self.pop[-1]
+        result = {
+            "training_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
+            "validation_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets)
+        }
+        if self.should_save_knowledge(result):
+            self.latest_best_dna=best_dna
+            self.save()
+
+        return result
 
     def should_save_knowledge(self,result):
-        return
-
-    def save_knowledge(self):
-        return
+        if self.latest_best_dna is None: return True
+        decision = False
+        old_training_score = self.evaluate_dna(DNA=self.latest_best_dna,
+                                               datasets=self.training_sets)
+        old_validation_score = self.evaluate_dna(DNA=self.latest_best_dna,
+                                               datasets=self.validation_sets)
+        if result['training_score'] > old_training_score:
+           if result['validation_score'] >= old_validation_score:
+               decision = True
+        return decision
 
     def load(self):
+        self.latest_best_dna = None
         if os.path.isfile(self.settings_filename):
             with open(self.settings_filename) as json_file:
                 data = json.load(json_file)
-                self.latest_best_settings = data['learning']['latest_best_settings']
+                self.latest_best_dna = data['learning']['latest_best_dna']
                 self.pop = np.array(data['learning']['pop'])
-                self.knowledge_base = data['knowledge_base']
-                print("Knowledge base loaded:  {} items".format(len(self.knowledge_base.keys())))
         return
 
     def save(self):
-        self.pop = np.round(self.pop,2)
+        self.pop = np.round(self.pop,4)
         data = { "learning":{
-                    "latest_best_settings":self.latest_best_settings,
+                    "latest_best_dna":self.latest_best_dna,
                     "pop":self.pop.tolist()
-                  },
-                  "knowledge_base":self.knowledge_base,
                   }
+                }
         with open(self.settings_filename, 'w') as outfile:
             json.dump(data, outfile, indent=2)
         return
