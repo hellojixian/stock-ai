@@ -92,12 +92,10 @@ class featureExtractor:
                 support_pos=0
             elif pressure_price==0:
                 support_pos=1
+            elif (pressure_price-support_price)>0.02:
+                support_pos = (pressure_price-close) / (pressure_price-support_price)
             else:
-                try:
-                    support_pos = (pressure_price-close) / (pressure_price-support_price)
-                except:
-                    symbol = subset.iloc[0]['symbol']
-                    print("ERROR:  symbol: {}".format(symbol))
+                support_pos = 0
 
             pressure_pos = 1-support_pos
             return support_pos, pressure_pos
