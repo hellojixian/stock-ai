@@ -10,6 +10,8 @@ from lib.feature_extract import featureExtractor as fe
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+MAX_PROCESSES=28
+
 def init_globals(arg1, arg2):
     global start_ts, counter, total
     start_ts = datetime.datetime.now(tz=None)
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     days = ds.loadTradeDays()
 
     processed_counter = mp.Value('i',0)
-    pool = mp.Pool(mp.cpu_count(), initializer=init_globals, initargs=(processed_counter, len(securities)))
+    pool = mp.Pool(min(MAX_PROCESSES,mp.cpu_count()), initializer=init_globals, initargs=(processed_counter, len(securities)))
     res = pool.map(preload_data, securities.iterrows())
     pool.close()
     print("")
