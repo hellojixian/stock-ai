@@ -184,12 +184,12 @@ class DataSource(object):
             if not os.path.isfile(DEFAULT_FEATURED_DATA):
                 DataSource.preload()
 
-            print("Loading featured data: \t",end="")
+            # print("Loading featured data: \t",end="")
             featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
                                             parse_dates=False,
                                             index_col=0,
                                             dtype=types_dict)
-            print("{} records".format(featured_dataset.shape[0]))
+            # print("{} records".format(featured_dataset.shape[0]))
 
             query = "symbol=='{}'".format(symbol)
             if start_date is not None:
