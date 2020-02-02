@@ -29,7 +29,7 @@ if __name__ == "__main__":
                         default=10, type=int,
                         help='how many data samples for each batch of learning')
 
-    parser.add_argument('--early_stop',
+    parser.add_argument('--early-stop',
                         default=3, type=int,
                         help='Stop learning if N batch of improving the result')
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             if report['validation_score'] == last_score:
                 stop_improving_counter+=1
                 print("Not improving result: {}".format(stop_improving_counter))
-            if stop_improving_counter>=args['eraly_stop']:
+            if stop_improving_counter>=args['early_stop']:
                 print("Early stop learning")
                 break
             last_score = report['validation_score']
