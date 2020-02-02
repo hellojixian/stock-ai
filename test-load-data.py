@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import multiprocessing as mp
 import datetime, time
+import argparse
 
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
@@ -10,7 +11,14 @@ from lib.feature_extract import featureExtractor as fe
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-MAX_PROCESSES=28
+parser = argparse.ArgumentParser(description='Data Proprocessing')
+parser.add_argument('--max-processes',
+                    default=28, type=int,
+                    help='max to N processes to use')
+
+args = vars(parser.parse_args())
+MAX_PROCESSES = args['max_processes']
+
 
 def init_globals(arg1, arg2):
     global start_ts, counter, total
