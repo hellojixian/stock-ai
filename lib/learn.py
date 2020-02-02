@@ -87,7 +87,7 @@ class learn(object):
             time_eta = (time_elapsed/progress) * (1-progress)
             print("\rLearning Progress: {:>5.1f}% ...\t({}/{})\t\t| Elapsed Time: {}  ETA: {}".format(
             round(progress*100,2), processed_DNA.value,pbar_size,
-            time_elapsed, time_eta),end="")
+            str(time_elapsed).split('.')[0], str(time_eta).split('.')[0]),end="")
         return result
 
     def evaluate_dna(self, DNA, datasets=None):
