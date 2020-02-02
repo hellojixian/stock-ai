@@ -17,6 +17,10 @@ if __name__ == "__main__":
                         default=100, type=int,
                         help='how many batch of samples for learning')
 
+    parser.add_argument('--skip-batch',
+                        default=0, type=int,
+                        help='skip first N of batch')
+
     parser.add_argument('--step-size',
                         default=30, type=int,
                         help='how many generations for each batch of learning')
@@ -24,6 +28,11 @@ if __name__ == "__main__":
     parser.add_argument('--training-set-size',
                         default=10, type=int,
                         help='how many data samples for each batch of learning')
+
+    parser.add_argument('--early_stop',
+                        default=3, type=int,
+                        help='Stop learning if N batch of improving the result')
+
     args = vars(parser.parse_args())
 
     import warnings
@@ -34,6 +43,9 @@ if __name__ == "__main__":
     securities = ds.loadSecuirtyList();
 
     for i in range(args['batch_size']):
+        #skip batch logic
+        if i < args['skip_batch']: continue
+
         print("Learning batch :{}".format(i))
 
         print("Generating training sets:\t",end="")
@@ -56,9 +68,21 @@ if __name__ == "__main__":
         print("[DONE]")
 
         ml = ln()
+        last_score = 0
+        stop_improving_counter = 0
         for _ in range(args['step_size']):
             print("Batch :{}\t GA Learning step: {}".format(i,_))
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+
+            # early stop logic
+            if report['validation_score'] == last_score:
+                stop_improving_counter+=1
+                print("Not improving result: {}".format(stop_improving_counter))
+            if stop_improving_counter>=args['eraly_stop']:
+                print("Early stop learning")
+                break
+            last_score = report['validation_score']
+
             print(report)
         ml.save()
         del ml

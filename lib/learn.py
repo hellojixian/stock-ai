@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import progressbar
 import multiprocessing as mp
+import datetime
 
 from .strategy import strategy as stg
 
@@ -14,7 +15,8 @@ MUT_STRENGTH = 0.03
 POOL = None
 
 def _init_globals(bar_size, counter):
-    global pbar_size,processed_DNA
+    global pbar_size,processed_DNA, start_ts
+    start_ts = datetime.datetime.now(tz=None)
     pbar_size = bar_size
     processed_DNA  = counter
     return
@@ -65,7 +67,8 @@ class learn(object):
         return
 
     def get_fitness(self, dna_series):
-        global POOL
+        global POOL, start_ts
+        start_ts = datetime.datetime.now(tz=None)
         res = POOL.map(self._evaluate_dna_mp,dna_series)
         v = np.array(res)
         print("")
@@ -78,8 +81,13 @@ class learn(object):
             # pbar = progressbar.ProgressBar(max_value=pbar_size)
             processed_DNA.value+=1
             # pbar.update(processed_DNA.value)
-            print("\rLearning Progress: {:>5.1f}% ...\t({}/{})".format(
-            round(processed_DNA.value/pbar_size*100), processed_DNA.value,pbar_size),end="")
+            # calculate time
+            time_elapsed = datetime.datetime.now(tz=None) - start_ts
+            progress = processed_DNA.value/pbar_size
+            time_eta = (time_elapsed/progress) * (1-progress)
+            print("\rLearning Progress: {:>5.1f}% ...\t({}/{})\t\t| Elapsed Time: {}  ETA: {}".format(
+            round(progress*100), processed_DNA.value,pbar_size),
+            time_elapsed, time_eta,end="")
         return result
 
     def evaluate_dna(self, DNA, datasets=None):
