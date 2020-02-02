@@ -85,8 +85,9 @@ class learn(object):
             time_elapsed = datetime.datetime.now(tz=None) - start_ts
             progress = processed_DNA.value/pbar_size
             time_eta = (time_elapsed/progress) * (1-progress)
-            print("\rLearning Progress: {:>5.1f}%  ({:>3d}/{:>3d}) \t[ {:<25s} ]\t Elapsed Time: {}  ETA: {}".format(
-            round(progress*100,2), processed_DNA.value,pbar_size, "#"*int(progress*25),
+            bar_width = 25
+            print("\rLearning Progress: {:>5.1f}%  ({:>3d}/{:>3d}) \t[{}{}]\t Elapsed Time: {}  ETA: {}".format(
+            round(progress*100,2), processed_DNA.value,pbar_size, "#"*int(progress*bar_width),"."*(bar_width-int(1-progress)),
             str(time_elapsed).split('.')[0], str(time_eta).split('.')[0]),end="")
         return result
 
