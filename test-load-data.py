@@ -37,7 +37,7 @@ def preload_data(data):
         time_elapsed = datetime.datetime.now(tz=None) - start_ts
         time_eta = (time_elapsed/progress) * (1 - progress)
         bar_width = 25
-        print("\rProgress: {:>5.2f}% ({:04d}/{:04d})\tSymbol: {:s}\t[{}{}]\tElapsed Time: {}  ETA: {}".format(
+        print("\rProgress: {:>5.2f}% ({:04d}/{:04d}) Symbol: {:s}\t[{}{}]\tElapsed Time: {}  ETA: {}".format(
             round(progress*100,2), counter.value, total, symbol,
             "#"*int(progress*bar_width),"."*(bar_width-int(progress*bar_width)),
             str(time_elapsed).split(".")[0], str(time_eta).split(".")[0]
