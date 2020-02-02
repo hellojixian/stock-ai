@@ -93,13 +93,13 @@ class DataSource(object):
 
             #Extract features
             if os.path.isfile(DEFAULT_FEATURED_DATA):
-                print("Loading featured data: \t",end="")
+                # print("Loading featured data: \t",end="")
                 types_dict={"symbol":str}
                 featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
                                                 parse_dates=False,
                                                 index_col=0,
                                                 dtype=types_dict)
-                print("{} records".format(featured_dataset.shape[0]))
+                # print("{} records".format(featured_dataset.shape[0]))
             else:
                 featured_dataset = pd.DataFrame()
 
