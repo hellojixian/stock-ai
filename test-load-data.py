@@ -55,6 +55,7 @@ if __name__ == "__main__":
     securities = ds.loadSecuirtyList();
     days = ds.loadTradeDays()
 
+    print("Max processes: {}".format(MAX_PROCESSES))
     processed_counter = mp.Value('i',0)
     pool = mp.Pool(min(MAX_PROCESSES,mp.cpu_count()), initializer=init_globals, initargs=(processed_counter, len(securities)))
     res = pool.map(preload_data, securities.iterrows())
