@@ -73,7 +73,7 @@ if __name__ == "__main__":
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-    np.random.seed(0)
+    # np.random.seed(0)
     securities = ds.loadSecuirtyList()
 
     for i in range(args['batch_size']):
