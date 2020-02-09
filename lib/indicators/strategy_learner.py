@@ -165,8 +165,8 @@ class StrategyLearner(object):
         old_validation_score = self.evaluate_dna(DNA=self.latest_best_dna,
                                                datasets=self.validation_sets)
         if result['training_score'] > old_training_score:
-           if result['validation_score'] >= old_validation_score:
-               decision = True
+           # if result['validation_score'] >= old_validation_score:
+           decision = True
         return decision
 
     def load(self):
