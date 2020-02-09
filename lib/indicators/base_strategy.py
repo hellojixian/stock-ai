@@ -1,8 +1,8 @@
-
-
-from lib.backtest import backtest as bt
 import sys
 import math
+import numpy as np
+
+from lib.backtest import backtest as bt
 
 INIT_FUND = 100000
 MIN_BUY_UNIT = 100
