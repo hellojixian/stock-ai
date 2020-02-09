@@ -42,6 +42,11 @@ if __name__ == "__main__":
     mp.freeze_support()
 
     parser = argparse.ArgumentParser(description='Machine Learning.')
+    parser.add_argument('--indicator','-i',
+                        required=True,
+                        default='dropdays', type=str, choices=["dropdays","trend"],
+                        help='which module that you want to improve')
+
     parser.add_argument('--batch-size',
                         default=100, type=int,
                         help='how many batch of samples for learning')
@@ -111,7 +116,7 @@ if __name__ == "__main__":
             print("Batch :{}\t GA Learning step: {}".format(i,_))
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
             ml.dump_dna()
-            
+
             # early stop logic
             if report['validation_score'] == last_score:
                 stop_improving_counter+=1

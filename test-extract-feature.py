@@ -26,9 +26,5 @@ if __name__ == "__main__":
     symbol, start_date, end_date = sample.name, sample.start_date, sample.end_date
     dataset = ds.loadFeaturedData(symbol, start_date, end_date)
 
-    # for i in [5,10,20,30]:
-    #     print('ma{}_score'.format(i))
-    #     print(dataset['ma{}_score'.format(i)].quantile(0.05), dataset['ma{}_score'.format(i)].quantile(0.95))
-
     for f in ['change','drop_days','lossrate','change_diff']:
         print(f,dataset[f].quantile(0.05), dataset[f].quantile(0.95))

@@ -5,9 +5,9 @@ import progressbar
 import multiprocessing as mp
 import datetime
 
-POP_SIZE = 40 #40
+POP_SIZE = 60 #40
 MAX_POP_SIZE = 20
-NEW_KIDS = 60 #60
+NEW_KIDS = 90 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.05
 POOL = None
