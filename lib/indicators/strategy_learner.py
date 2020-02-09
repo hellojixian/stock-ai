@@ -144,7 +144,7 @@ class StrategyLearner(object):
         result = {
             "training_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
             "validation_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets),
-            "val_report": self.gen_detailed_report(DNA=best_dna, datasets=self.validation_sets),
+            "validation_report": self.gen_detailed_report(DNA=best_dna, datasets=self.validation_sets),
         }
         if self.should_save_knowledge(result):
             self.latest_best_dna=best_dna

@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     # np.random.seed(0)
     securities = ds.loadSecuirtyList()
-    pp = pprint.PrettyPrinter(indent=4)
+    pp = pprint.PrettyPrinter(indent=2, width=60)
 
     for i in range(args['batch_size']):
         #skip batch logic
