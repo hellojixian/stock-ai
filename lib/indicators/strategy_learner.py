@@ -5,8 +5,8 @@ import progressbar
 import multiprocessing as mp
 import datetime
 
-POP_SIZE = 36 #40
-NEW_KIDS = 90 #60
+POP_SIZE = 30 #40
+NEW_KIDS = 70 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.03
 POOL = None
@@ -103,7 +103,7 @@ class StrategyLearner(object):
             if len(training_set)==0: continue
             symbol = training_set.iloc[0]['symbol']
             report = mystg.backtest(symbol, training_set)
-            score = (report['win_rate'] * report['sessions']) / (report['max_continue_errs']+1)
+            score = (report['win_rate'] ) / (report['max_continue_errs']+1) * report['sessions']
             scores.append(score)
             del mystg
         score = round(np.mean(scores),4)
