@@ -4,6 +4,7 @@ import numpy as np
 import multiprocessing as mp
 import datetime, time
 import argparse
+import pprint
 
 from lib.feature_extract import featureExtractor as fe
 from lib.datasource import DataSource as ds
@@ -76,6 +77,7 @@ if __name__ == "__main__":
 
     # np.random.seed(0)
     securities = ds.loadSecuirtyList()
+    pp = pprint.PrettyPrinter(indent=4)
 
     for i in range(args['batch_size']):
         #skip batch logic
@@ -113,7 +115,7 @@ if __name__ == "__main__":
             StrategyClass = dropdays
         elif args['indicator'] == 'trend':
             StrategyClass = trend
-            
+
         ml = learner(StrategyClass)
         last_score = 0
         stop_improving_counter = 0
@@ -131,7 +133,7 @@ if __name__ == "__main__":
                 break
             last_score = report['validation_score']
 
-            print(report)
+            pp.pprint(report)
         ml.save()
         del ml
 

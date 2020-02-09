@@ -142,7 +142,7 @@ class StrategyLearner(object):
 
         best_dna = self.pop[-1]
         result = {
-            "train_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
+            "training_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
             "val_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets),
             "val_report": self.gen_detailed_report(DNA=best_dna, datasets=self.validation_sets),
         }
