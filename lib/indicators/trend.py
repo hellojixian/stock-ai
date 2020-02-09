@@ -37,4 +37,7 @@ class Trend(BaseStrategy):
         return
 
     def get_buy_score(self, record):
-        return super
+        return super().get_buy_score(record)
+
+    def get_sell_score(self, record):
+        return super().get_sell_score(record)

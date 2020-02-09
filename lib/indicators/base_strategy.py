@@ -1,6 +1,5 @@
 import sys
 import math
-import numpy as np
 
 from lib.backtest import backtest as bt
 
@@ -101,7 +100,7 @@ class BaseStrategy(object):
         return decsion
 
     def dump_dna(self):
-        print("DNA: \n{}".format(str(np.round(self.dna,3))))
+        print("DNA: \n{}".format(str(self.dna)))
         return
 
     def get_buy_score(self, record):
