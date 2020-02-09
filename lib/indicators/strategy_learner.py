@@ -11,6 +11,7 @@ NEW_KIDS = 60 #60
 DNA_LEN = 26
 MUT_STRENGTH = 0.05
 POOL = None
+DNA_MIN, DNA_MAX = -5,5
 
 def _init_globals(bar_size, counter):
     global pbar_size,processed_DNA, start_ts
@@ -58,7 +59,7 @@ class StrategyLearner(object):
             for i in range(DNA_LEN):
                 mut = int(np.random.uniform(-self.mut_strength,self.mut_strength))
                 v = kid[i] + mut
-                kid[i] = np.clip(v, -3, 3)
+                kid[i] = np.clip(v, DNA_MIN, DNA_MAX)
         return kids
 
     def kill_bad(self, kids):
