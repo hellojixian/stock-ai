@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
-import argparse, datetime
-import sys
 import multiprocessing as mp
-from lib.datasource import DataSource as ds
+import datetime, time
+import argparse
+
 from lib.feature_extract import featureExtractor as fe
-from lib.backtest import backtest as bt
-from lib.strategy import strategy as stg
-from lib.learn import learn as ln
+from lib.datasource import DataSource as ds
+from lib.indicators.strategy_learner import StrategyLearner as learner
+from lib.indicators.dropdays import DropDays as dropdays
+
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def init_globals(arg1, arg2):
     global start_ts, counter, total
@@ -65,7 +69,7 @@ if __name__ == "__main__":
 
 
     np.random.seed(0)
-    securities = ds.loadSecuirtyList();
+    securities = ds.loadSecuirtyList()
 
     for i in range(args['batch_size']):
         #skip batch logic
@@ -99,12 +103,14 @@ if __name__ == "__main__":
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
 
-        ml = ln()
+        StrategyClass = dropdays
+        ml = learner(StrategyClass)
         last_score = 0
         stop_improving_counter = 0
         for _ in range(args['step_size']):
             print("Batch :{}\t GA Learning step: {}".format(i,_))
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+            ml.dump_dna()
             
             # early stop logic
             if report['validation_score'] == last_score:

@@ -20,9 +20,8 @@ class featureExtractor:
             values = list(values)
             p_min, p_max = np.min(values), np.max(values)
             p_min_idx, p_max_idx = values.index(p_min), values.index(p_max)
-            # down trend
             total = len(values)
-            trend = (p_max_idx-p_min_idx)/total            
+            trend = (p_max_idx-p_min_idx)/total
             return trend
 
         def _find_pos(values):
@@ -53,19 +52,24 @@ class featureExtractor:
             return round(days/total,2)
 
         subset = dataset.copy()
-        subset.loc[:,'bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
-        subset.loc[:,'change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
-        subset.loc[:,'open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
-        subset.loc[:,'down_line'] = round((subset['close'] - subset['low']) / subset['close'] * 100, 2)
-        subset.loc[:,'up_line']   = round((subset['close'] - subset['high']) / subset['close'] * 100, 2)
-        subset.loc[:,'amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
+        subset.loc[:,'bar'] = (subset['close'] - subset['open']) / subset['open']
+        subset.loc[:,'change'] = (subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1)
+        subset.loc[:,'change_diff'] = subset['change'] - subset['change'].shift(periods=1)
+        subset.loc[:,'open_jump'] = (subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1)
+        subset.loc[:,'down_line'] = (subset['close'] - subset['low']) / subset['close']
+        subset.loc[:,'up_line']   = (subset['close'] - subset['high']) / subset['close']
+        subset.loc[:,'amp'] = (subset['high'] - subset['low']) / subset['open']
+        for i in [5,10]:
+            subset.loc[:,'amp_{}'.format(i)] = subset.loc[:,'amp'].rolling(window=i).mean()
+        subset.loc[:,'amp_0105'] = (subset['amp'] - subset['amp_5']) / subset['amp_5']
+        subset.loc[:,'amp_0510'] = (subset['amp_5'] - subset['amp_10']) / subset['amp_10']
         for i in [5,10,30,60]:
             subset.loc[:,'trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
         for i in [10,30,250]:
             subset.loc[:,'pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
-        for i in [10]:
+        for i in [7]:
             subset.loc[:,'drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
-            subset.loc[:,'lossr_{}'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
+            subset.loc[:,'lossrate'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
         subset = subset.dropna()
         return subset
 

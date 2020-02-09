@@ -179,19 +179,18 @@ class DataSource(object):
         cache_raw_file = "data/cache/raw/{}_{}_{}.csv".format(symbol,start_date,end_date)
         if os.path.isfile(cache_file):
             subset = pd.read_csv(cache_file,parse_dates=False,
-                                            index_col=0,
+                                            index_col=None,
                                             dtype=types_dict)
         else:
             if os.path.isfile(cache_raw_file):
                 subset = pd.read_csv(cache_raw_file,parse_dates=False,
-                                                    index_col=0,
+                                                    index_col=None,
                                                     dtype=types_dict)
             else:
-                # print("Loading featured data: \t",end="")
                 headers = ["symbol","date","open","high","low","close","volume","amount"]
                 dataset = pd.read_csv(DEFAULT_DATAFILE,
                                     parse_dates=False,
-                                    index_col=0,
+                                    index_col=None,
                                     skiprows=1,
                                     names=headers,
                                     dtype=types_dict)
@@ -201,12 +200,14 @@ class DataSource(object):
                     query = query + " and date>='{}'".format(start_date)
                 if end_date is not None:
                     query = query + " and date<='{}'".format(end_date)
-
                 subset = dataset[dataset.eval(query)]
-                subset.to_csv(cache_raw_file)
+                subset.index = subset.index.astype('str')
+                subset.to_csv(cache_raw_file, index=False)
 
             if len(subset)>0: subset = fe.processData(subset)
-            subset.to_csv(cache_file)
+            subset.to_csv(cache_file, index=False)
+
+        subset.index = subset.index.astype('str')
         return subset
 
 def _init_globals(arg1,arg2,arg3):

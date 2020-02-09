@@ -29,5 +29,6 @@ if __name__ == "__main__":
     # for i in [5,10,20,30]:
     #     print('ma{}_score'.format(i))
     #     print(dataset['ma{}_score'.format(i)].quantile(0.05), dataset['ma{}_score'.format(i)].quantile(0.95))
-    f = 'trend_60'
-    print(dataset[f].quantile(0.05), dataset[f].quantile(0.95))
+
+    for f in ['amp','amp_0105','amp_0510','lossrate','change_diff']:
+        print(f,dataset[f].quantile(0.05), dataset[f].quantile(0.95))
