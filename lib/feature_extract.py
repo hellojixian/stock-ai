@@ -151,7 +151,7 @@ class featureExtractor:
         return dataset
 
     def calculateRSI(dataset):
-        vmin, vmax = 15, 85
+        dataset.loc[:,'rsi_3'] = talib.RSI(dataset['close'].values, timeperiod=3)
         dataset.loc[:,'rsi_7'] = talib.RSI(dataset['close'].values, timeperiod=7)
         dataset.loc[:,'rsi_14'] = talib.RSI(dataset['close'].values, timeperiod=14)
         dataset.loc[:,'rsi_diff'] = dataset['rsi_7'] - dataset['rsi_7'].shift(periods=1)
