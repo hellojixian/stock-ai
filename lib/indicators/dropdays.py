@@ -49,16 +49,16 @@ class DropDays(BaseStrategy):
 
     def get_buy_score(self, record):
         score = 0
-        score += record['lossrate']   * self.buy_lossrate_weight
-        score += record['change']     * self.buy_last_change_weight
-        score += record['change_diff']* self.buy_change_diff_weight
-        score += (record['drop_days']-0.5)  * self.buy_drop_days_weight
+        score += record['lossrate']         * self.buy_lossrate_weight
+        score += record['change']*10        * self.buy_last_change_weight
+        score += record['change_diff']*10   * self.buy_change_diff_weight
+        score += (record['drop_days'])      * self.buy_drop_days_weight
         return score
 
     def get_sell_score(self, record):
         score = 0
-        score += record['lossrate']   * self.sell_lossrate_weight
-        score += record['change']     * self.sell_last_change_weight
-        score += record['change_diff']* self.sell_change_diff_weight
-        score += (record['drop_days']-0.5)  * self.sell_drop_days_weight
+        score += record['lossrate']         * self.sell_lossrate_weight
+        score += record['change']*10        * self.sell_last_change_weight
+        score += record['change_diff']*10   * self.sell_change_diff_weight
+        score += (record['drop_days'])      * self.sell_drop_days_weight
         return score

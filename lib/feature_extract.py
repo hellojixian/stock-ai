@@ -32,7 +32,7 @@ class featureExtractor:
             pos = np.round(pos,2)
             return pos
 
-        def _find_dropdays(values):
+        def _find_dropdays(values, total):
             values = list(values)
             values.reverse()
             days=0
@@ -41,7 +41,7 @@ class featureExtractor:
                     days +=1
                 else:
                     break
-            return days
+            return days/total
 
         def _find_lossrate(values):
             values = list(values)
@@ -68,7 +68,7 @@ class featureExtractor:
         for i in [10,30,250]:
             subset.loc[:,'pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
         for i in [7]:
-            subset.loc[:,'drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
+            subset.loc[:,'drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,args=(i,),raw=True)
             subset.loc[:,'lossrate'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
         subset = subset.dropna()
         return subset
