@@ -20,7 +20,7 @@ def _init_globals(bar_size, counter):
     return
 
 class StrategyLearner(object):
-    """这个英国作为策略的一个学习器"""
+    """动态策略的一个学习器"""
 
     def __init__(self, strategy):
         super().__init__()
@@ -117,7 +117,7 @@ class StrategyLearner(object):
             if len(training_set)==0: continue
             symbol = training_set.iloc[0]['symbol']
             report = mystg.backtest(symbol, training_set)
-            score = report['profit']
+            score = round(report['profit'],2)
             scores.append(score)
             del mystg
 

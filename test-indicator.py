@@ -97,7 +97,7 @@ if __name__ == "__main__":
         print("\n[DONE]")
 
         print("Generating training sets:\t",end="")
-        for symbol,sample in samples[:(args['training_set_size']+1)].iterrows():
+        for symbol,sample in samples[:(args['training_set_size'])].iterrows():
             start_date, end_date = sample.start_date, sample.end_date
             dataset = ds.loadFeaturedData(symbol, start_date, end_date)
             if dataset.shape[0]>0: training_sets.append(dataset)
