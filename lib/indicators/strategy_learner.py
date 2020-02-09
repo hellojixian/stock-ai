@@ -121,13 +121,16 @@ class StrategyLearner(object):
             scores.append(score)
             del mystg
 
+        scores = np.sort(scores)
+        scores[:] = scores[::-1]
         return {
-            "profit":{
+            "stat":{
                 "min": np.min(scores),
                 "max": np.max(scores),
                 "mean": np.mean(scores),
                 "median": np.median(scores)
-            }
+            },
+            "profits": scores
         }
 
 
