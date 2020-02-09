@@ -37,7 +37,7 @@ class DropDays(BaseStrategy):
         return
 
     def dump_dna(self):
-        print("DNA Dump: {}".self.dna)
+        print("DNA: {}".format(self.dna))
         return
 
     def get_buy_score(self, record):

@@ -15,7 +15,7 @@ class Trend(BaseStrategy):
      amp_0510 - 远期振幅变化
     '''
 
-    NAME = 'dropdays'
+    NAME = 'trend'
     DNA_LEN = 8
 
     def __init__(self, dna):
