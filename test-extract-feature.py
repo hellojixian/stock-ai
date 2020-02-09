@@ -26,5 +26,7 @@ if __name__ == "__main__":
     symbol, start_date, end_date = sample.name, sample.start_date, sample.end_date
     dataset = ds.loadFeaturedData(symbol, start_date, end_date)
 
-    for f in ['amp_0105','amp_0510','change','drop_days','lossrate','change_diff']:
+    features = ['amp_0105','amp_0510','change','drop_days','lossrate','change_diff']
+    features = ['rsi_7','rsi_14']
+    for f in features:
         print(f,dataset[f].quantile(0.05), dataset[f].quantile(0.95))

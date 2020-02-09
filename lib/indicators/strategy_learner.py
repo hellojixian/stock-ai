@@ -130,7 +130,7 @@ class StrategyLearner(object):
                 "mean": np.mean(scores),
                 "median": np.median(scores)
             },
-            "profits": scores
+            "profits": list(scores)
         }
 
 

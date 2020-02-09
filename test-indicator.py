@@ -12,6 +12,7 @@ from lib.indicators.strategy_learner import StrategyLearner as learner
 
 from lib.indicators.dropdays import DropDays as dropdays
 from lib.indicators.trend import Trend as trend
+from lib.indicators.rsi import RSI as rsi
 
 
 import warnings
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Machine Learning.')
     parser.add_argument('--indicator','-i',
                         required=True,
-                        default='dropdays', type=str, choices=["dropdays","trend"],
+                        default='dropdays', type=str, choices=["dropdays","trend","rsi"],
                         help='which module that you want to improve')
 
     parser.add_argument('--batch-size',
@@ -78,6 +79,14 @@ if __name__ == "__main__":
     # np.random.seed(0)
     securities = ds.loadSecuirtyList()
     pp = pprint.PrettyPrinter(indent=2, width=60)
+
+    # 设置训练的指标模块
+    if args['indicator'] == 'dropdays':
+        StrategyClass = dropdays
+    elif args['indicator'] == 'trend':
+        StrategyClass = trend
+    elif args['indicator'] == 'rsi':
+        StrategyClass = rsi
 
     for i in range(args['batch_size']):
         #skip batch logic
@@ -110,11 +119,6 @@ if __name__ == "__main__":
             dataset = ds.loadFeaturedData(symbol, start_date, end_date)
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
-
-        if args['indicator'] == 'dropdays':
-            StrategyClass = dropdays
-        elif args['indicator'] == 'trend':
-            StrategyClass = trend
 
         ml = learner(StrategyClass)
         last_score = 0
