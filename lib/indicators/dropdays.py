@@ -12,50 +12,23 @@ class DropDays(BaseStrategy):
     '''
 
     NAME = 'dropdays'
-    DNA_LEN = 12
+    FEATURES = [
+        ['lossrate',    0,  1],
+        ['drop_days',   0,  1],
+        ['change_diff', 0,  10],
+        ['change',      0,  10],
+        ['amp_0105',    0,  2],
+        ['amp_0510',    0,  1],
+    ]
+    DNA_LEN = len(FEATURES)*2
 
     def __init__(self, dna):
         super().__init__()
         self.dna = dna
-        self.parse_dna(dna)
-        return
-
-    def parse_dna(self, dna):
-        self.buy_lossrate_weight           = dna[0]
-        self.buy_drop_days_weight          = dna[1]
-        self.buy_last_change_weight        = dna[2]
-        self.buy_change_diff_weight        = dna[3]
-        self.buy_amp0105_weight            = dna[4]
-        self.buy_amp0510_weight            = dna[5]
-
-        self.sell_lossrate_weight          = dna[6]
-        self.sell_drop_days_weight         = dna[7]
-        self.sell_last_change_weight       = dna[8]
-        self.sell_change_diff_weight       = dna[9]
-        self.sell_amp0105_weight           = dna[10]
-        self.sell_amp0510_weight           = dna[11]
-        return
-
-    def dump_dna(self):
-        print("DNA: {}".format(self.dna))
         return
 
     def get_buy_score(self, record):
-        score = 0
-        score += record['lossrate']         * self.buy_lossrate_weight
-        score += record['change']*10        * self.buy_last_change_weight
-        score += record['change_diff']*10   * self.buy_change_diff_weight
-        score += record['drop_days']        * self.buy_drop_days_weight
-        score += record['amp_0105']         * self.buy_amp0105_weight
-        score += record['amp_0510']*2       * self.buy_amp0510_weight
-        return score
+        return super().get_buy_score(record)
 
     def get_sell_score(self, record):
-        score = 0
-        score += record['lossrate']         * self.sell_lossrate_weight
-        score += record['change']*10        * self.sell_last_change_weight
-        score += record['change_diff']*10   * self.sell_change_diff_weight
-        score += record['drop_days']        * self.sell_drop_days_weight
-        score += record['amp_0105']         * self.sell_amp0105_weight
-        score += record['amp_0510']*2       * self.sell_amp0510_weight
-        return score
+        return super().get_sell_score(record)

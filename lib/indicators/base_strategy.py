@@ -99,3 +99,23 @@ class BaseStrategy(object):
         decsion = False
         if self.get_sell_score(record) >= SELL_THRESHOLD: decsion = True
         return decsion
+
+    def dump_dna(self):
+        print("DNA: \n{}".format(str(np.round(self.dna,3))))
+        return
+
+    def get_buy_score(self, record):
+        score = 0
+        i = 0
+        for feature,bias,scaler in self.FEATURES:
+            score += (record[feature] + bias) * scaler * self.dna[i]
+            i+=1
+        return score
+
+    def get_sell_score(self, record):
+        score = 0
+        i = len(self.FEATURES)
+        for feature,bias,scaler in self.FEATURES:
+            score += (record[feature] + bias) * scaler * self.dna[i]
+            i+=1
+        return score
