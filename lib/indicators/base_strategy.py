@@ -25,6 +25,7 @@ class BaseStrategy(object):
 
     def backtest(self, symbol,dataset):
         self.dataset = dataset
+        self.session_log = []
         for idx,record in dataset.iterrows():
             price = record['close']
             if self.session is not None: self.session['days']+=1
@@ -78,15 +79,7 @@ class BaseStrategy(object):
         if sessions>0: win_rate = wins / sessions
         profit = (self.test.get_value() - self.test.get_init_fund()) / self.test.get_init_fund()
         baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
-        # if profit <=0:
-        #     import pprint
-        #     pp = pprint.PrettyPrinter(indent=2, width=60)
-        #     print("value: {}".format(self.test.get_value()))
-        #     print("init_fund: {}".format(self.test.get_init_fund()))
-        #     pp.pprint(self.session_log)
-        #     raise Exception("profit:{} Minus profit, not possible".format(profit))
 
-        self.session_log = []
         return {
             "max_continue_errs": max_continue_errs,
             "sessions": sessions,
