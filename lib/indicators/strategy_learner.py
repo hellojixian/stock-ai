@@ -117,7 +117,7 @@ class StrategyLearner(object):
             if len(training_set)==0: continue
             symbol = training_set.iloc[0]['symbol']
             report = mystg.backtest(symbol, training_set)
-            score = round(report['profit'],2)
+            score = round(report['profit'],3)
             scores.append(score)
             del mystg
 

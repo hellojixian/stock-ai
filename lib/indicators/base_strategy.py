@@ -100,7 +100,7 @@ class BaseStrategy(object):
         return decsion
 
     def dump_dna(self):
-        print("DNA: \n{}".format(str(self.dna)))
+        print("DNA: {}".format(str(self.dna)))
         return
 
     def get_buy_score(self, record):
