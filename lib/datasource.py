@@ -137,10 +137,6 @@ class DataSource(object):
                     featured_dataset = featured_dataset.append(chunk_res,sort=False)
                     featured_dataset = featured_dataset.drop_duplicates()
 
-                    # if the computer is fast enough, there is no need to save progress at all
-                    # print("\nSaving Progress: {} records".format(featured_dataset.shape[0]))
-                    # featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
-                    # security_list.to_csv(DEFAULT_SECURITYLIST)
                 featured_dataset.to_csv(DEFAULT_FEATURED_DATA)
                 security_list.to_csv(DEFAULT_SECURITYLIST)
                 pool.close()
@@ -202,9 +198,11 @@ class DataSource(object):
                     query = query + " and date<='{}'".format(end_date)
                 subset = dataset[dataset.eval(query)]
                 subset.index = subset.index.astype('str')
+                subset = subset.dropna()
                 subset.to_csv(cache_raw_file, index=False)
 
             if len(subset)>0: subset = fe.processData(subset)
+            subset = subset.dropna()
             subset.to_csv(cache_file, index=False)
 
         subset.index = subset.index.astype('str')
