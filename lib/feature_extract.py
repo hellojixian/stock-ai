@@ -4,15 +4,17 @@ import numpy as np
 
 class featureExtractor:
     def processData(dataset):
-        dataset = featureExtractor.extractSimpleFeatures(dataset)
-        dataset = featureExtractor.calculateKDJ(dataset)
-        dataset = featureExtractor.calculateBBands(dataset)
-        dataset = featureExtractor.calculateMACD(dataset)
-        dataset = featureExtractor.calculateDrop(dataset)
-        dataset = featureExtractor.calculateMA(dataset)
-        dataset = featureExtractor.calculateRSI(dataset)
-        # 清理数据
         dataset = dataset.dropna()
+        if len(dataset)>0:
+            dataset = featureExtractor.extractSimpleFeatures(dataset)
+            dataset = featureExtractor.calculateKDJ(dataset)
+            dataset = featureExtractor.calculateBBands(dataset)
+            dataset = featureExtractor.calculateMACD(dataset)
+            dataset = featureExtractor.calculateDrop(dataset)
+            dataset = featureExtractor.calculateMA(dataset)
+            dataset = featureExtractor.calculateRSI(dataset)
+            # 清理数据
+            dataset = dataset.dropna()
         return dataset
 
     def extractSimpleFeatures(dataset):
