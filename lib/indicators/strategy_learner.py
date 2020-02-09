@@ -103,7 +103,7 @@ class StrategyLearner(object):
             if len(training_set)==0: continue
             symbol = training_set.iloc[0]['symbol']
             report = mystg.backtest(symbol, training_set)
-            score = (report['win_rate'] ) / (report['max_continue_errs']+1) * report['sessions']
+            score = (report['win_rate'] * report['sessions']) / (report['max_continue_errs']+1) * report['profit']
             scores.append(score)
             del mystg
         score = round(np.mean(scores),4)
