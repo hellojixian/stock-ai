@@ -1,13 +1,38 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
-import argparse
+import argparse, datetime
+import sys
 import multiprocessing as mp
 from lib.datasource import DataSource as ds
 from lib.feature_extract import featureExtractor as fe
 from lib.backtest import backtest as bt
 from lib.strategy import strategy as stg
 from lib.learn import learn as ln
+
+def init_globals(arg1, arg2):
+    global start_ts, counter, total
+    start_ts = datetime.datetime.now(tz=None)
+    counter,total = arg1,arg2
+    return
+
+def preload_data(data):
+    symbol, start_date, end_date = data[0], data[1].start_date, data[1].end_date
+    dataset = ds.loadFeaturedData(symbol, start_date, end_date)
+    # time.sleep(0.1)
+    # 观察数据
+    with counter.get_lock():
+        counter.value +=1
+        progress = counter.value / total
+        time_elapsed = datetime.datetime.now(tz=None) - start_ts
+        time_eta = (time_elapsed/progress) * (1 - progress)
+        bar_width = 25
+        print("\rProgress: {:>5.2f}% ({:04d}/{:04d}) Symbol: {:s}\t[{}{}]\tElapsed Time: {}  ETA: {}".format(
+            round(progress*100,2), counter.value, total, symbol,
+            "#"*int(progress*bar_width),"."*(bar_width-int(progress*bar_width)),
+            str(time_elapsed).split(".")[0], str(time_eta).split(".")[0]
+        ), end="")
+    return
 
 if __name__ == "__main__":
     mp.freeze_support()
@@ -48,21 +73,28 @@ if __name__ == "__main__":
 
         print("Learning batch :{}".format(i))
 
-        print("Generating training sets:\t",end="")
+        print("Preloading datasets: {}".format(args['training_set_size']*2))
+        processed_counter = mp.Value('i',0)
+        pool = mp.Pool(min(args['training_set_size'],mp.cpu_count()), initializer=init_globals, initargs=(processed_counter, args['training_set_size']*2))
+
         # prepare datasets
         training_sets = []
-        while len(training_sets)<args['training_set_size']:
-            sample = securities.sample(1).iloc[0]
-            symbol, start_date, end_date = sample.name, sample.start_date, sample.end_date
+        samples = securities.sample(args['training_set_size']*2)
+        res = pool.map(preload_data, samples.iterrows())
+        pool.close()
+        print("[DONE]")
+
+        print("Generating training sets:\t",end="")
+        for symbol,sample in samples[:(args['training_set_size']+1)].iterrows():
+            start_date, end_date = sample.start_date, sample.end_date
             dataset = ds.loadFeaturedData(symbol, start_date, end_date)
             if dataset.shape[0]>0: training_sets.append(dataset)
         print("[DONE]")
 
         print("Generating validation sets:\t",end="")
         validation_sets = []
-        while len(validation_sets)<args['training_set_size']:
-            sample = securities.sample(1).iloc[0]
-            symbol, start_date, end_date = sample.name, sample.start_date, sample.end_date
+        for symbol,sample in samples[args['training_set_size']:].iterrows():
+            start_date, end_date = sample.start_date, sample.end_date
             dataset = ds.loadFeaturedData(symbol, start_date, end_date)
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")

@@ -201,8 +201,7 @@ class strategy:
                 self.reset_buy_delay()
         else:
             score = 0
-            score += record['bb_score']     *  self.buy_bbands_weight
-            score += record['drop_score']   *  self.buy_drop_weight
+
             score += record['trend_5']      *  self.buy_trend5_weight
             score += record['trend_10']     *  self.buy_trend10_weight
             score += record['trend_30']     *  self.buy_trend30_weight
@@ -210,7 +209,14 @@ class strategy:
             score += record['pos_10']/100   *  self.buy_pos10_weight
             score += record['pos_30']/100   *  self.buy_pos30_weight
             score += record['pos_250']/100  *  self.buy_pos250_weight
-            score += record['support_score']*  self.buy_support_weight
+
+            score += record['ma5_score']    *  self.buy_ma5_weight
+            score += record['ma10_score']   *  self.buy_ma10_weight
+            score += record['ma20_score']   *  self.buy_ma20_weight
+            score += record['ma30_score']   *  self.buy_ma30_weight
+            score += record['bb_score']     *  self.buy_bbands_weight
+            score += record['drop_score']   *  self.buy_drop_weight
+            score += record['rsi_score']    *  self.buy_rsi_weight
             score += record['kdj_score']    *  self.buy_kdj_weight
             score += record['macd_score']   *  self.buy_macd_weight
 
@@ -261,7 +267,7 @@ class strategy:
             score += (1-record['trend_5'])      *  self.sell_trend5_weight
             score += (1-record['trend_10'])     *  self.sell_trend10_weight
             score += (1-record['pos_10']/100)   *  self.sell_pos10_weight
-            score += (1-record['support_score'])*  self.sell_support_weight
+            # score += (1-record['support_score'])*  self.sell_support_weight
             score += (1-record['kdj_score'])    *  self.sell_kdj_weight
             score += (1-record['macd_score'])   *  self.sell_macd_weight
 

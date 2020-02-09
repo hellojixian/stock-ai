@@ -176,28 +176,35 @@ class DataSource(object):
         types_dict={"symbol":str}
         subset = None
         cache_file = "data/cache/featured/{}_{}_{}.csv".format(symbol,start_date,end_date)
+        cache_raw_file = "data/cache/raw/{}_{}_{}.csv".format(symbol,start_date,end_date)
         if os.path.isfile(cache_file):
             subset = pd.read_csv(cache_file,parse_dates=False,
                                             index_col=0,
                                             dtype=types_dict)
         else:
-            if not os.path.isfile(DEFAULT_FEATURED_DATA):
-                DataSource.preload()
+            if os.path.isfile(cache_raw_file):
+                subset = pd.read_csv(cache_raw_file,parse_dates=False,
+                                                    index_col=0,
+                                                    dtype=types_dict)
+            else:
+                # print("Loading featured data: \t",end="")
+                headers = ["symbol","date","open","high","low","close","volume","amount"]
+                dataset = pd.read_csv(DEFAULT_DATAFILE,
+                                    parse_dates=False,
+                                    index_col=0,
+                                    skiprows=1,
+                                    names=headers,
+                                    dtype=types_dict)
 
-            # print("Loading featured data: \t",end="")
-            featured_dataset = pd.read_csv(DEFAULT_FEATURED_DATA,
-                                            parse_dates=False,
-                                            index_col=0,
-                                            dtype=types_dict)
-            # print("{} records".format(featured_dataset.shape[0]))
+                query = "symbol=='{}'".format(symbol)
+                if start_date is not None:
+                    query = query + " and date>='{}'".format(start_date)
+                if end_date is not None:
+                    query = query + " and date<='{}'".format(end_date)
 
-            query = "symbol=='{}'".format(symbol)
-            if start_date is not None:
-                query = query + " and date>='{}'".format(start_date)
-            if end_date is not None:
-                query = query + " and date<='{}'".format(end_date)
+                subset = dataset[dataset.eval(query)]
+                subset.to_csv(cache_raw_file)
 
-            subset = featured_dataset[featured_dataset.eval(query)]
             if len(subset)>0: subset = fe.processData(subset)
             subset.to_csv(cache_file)
         return subset
@@ -249,60 +256,8 @@ def _processExtractTradeDaysFeatures(data):
     return rec
 
 def _processExtractFeatures(symbol):
-    def _find_trend(values):
-        values = list(values)
-        p_min, p_max = np.min(values), np.max(values)
-        p_min_idx, p_max_idx = values.index(p_min), values.index(p_max)
-        # down trend
-        trend = math.nan
-        if p_max_idx >= p_min_idx:
-            # up trend
-            trend = 1
-        elif p_max_idx < p_min_idx:
-            trend = 0
-        return trend
-
-    def _find_pos(values):
-        values = list(values)
-        close = values[-1]
-        p_min, p_max = np.min(values), np.max(values)
-        pos = (close - p_min) / (p_max - p_min) * 100
-        pos = np.round(pos,2)
-        return pos
-
-    def _find_dropdays(values):
-        values = list(values)
-        values.reverse()
-        days=0
-        for v in values:
-            if v<=0:
-                days +=1
-            else:
-                break
-        return days
-
-    def _find_lossrate(values):
-        values = list(values)
-        total = len(values)
-        days = 0
-        for v in values:
-            if v<=0: days+=1
-        return round(days/total,2)
-
     subset = DATASET[DATASET.eval("symbol=='{}'".format(symbol))].copy()
-    subset['bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
     subset['change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
-    subset['open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
-    subset['down_line'] = round((subset['close'] - subset['low']) / subset['close'] * 100, 2)
-    subset['up_line']   = round((subset['close'] - subset['high']) / subset['close'] * 100, 2)
-    subset['amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
-    for i in [5,10,30,60]:
-        subset['trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
-    for i in [10,30,250]:
-        subset['pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
-    for i in [10]:
-        subset['drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
-        subset['lossr_{}'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
     subset = subset.dropna()
 
     # print progress

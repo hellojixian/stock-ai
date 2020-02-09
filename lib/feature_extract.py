@@ -1,19 +1,91 @@
-import talib
+import talib, math
+import sys
 import numpy as np
 
 class featureExtractor:
     def processData(dataset):
+        dataset = featureExtractor.extractSimpleFeatures(dataset)
         dataset = featureExtractor.calculateKDJ(dataset)
         dataset = featureExtractor.calculateBBands(dataset)
         dataset = featureExtractor.calculateMACD(dataset)
         dataset = featureExtractor.calculateDrop(dataset)
-        dataset = featureExtractor.calculateSupport(dataset)
+        dataset = featureExtractor.calculateMA(dataset)
+        dataset = featureExtractor.calculateRSI(dataset)
         # 清理数据
         dataset = dataset.dropna()
         return dataset
 
+    def extractSimpleFeatures(dataset):
+        def _find_trend(values):
+            values = list(values)
+            p_min, p_max = np.min(values), np.max(values)
+            p_min_idx, p_max_idx = values.index(p_min), values.index(p_max)
+            # down trend
+            total = len(values)
+            trend = (p_max_idx-p_min_idx)/total            
+            return trend
+
+        def _find_pos(values):
+            values = list(values)
+            close = values[-1]
+            p_min, p_max = np.min(values), np.max(values)
+            pos = (close - p_min) / (p_max - p_min) * 100
+            pos = np.round(pos,2)
+            return pos
+
+        def _find_dropdays(values):
+            values = list(values)
+            values.reverse()
+            days=0
+            for v in values:
+                if v<=0:
+                    days +=1
+                else:
+                    break
+            return days
+
+        def _find_lossrate(values):
+            values = list(values)
+            total = len(values)
+            days = 0
+            for v in values:
+                if v<=0: days+=1
+            return round(days/total,2)
+
+        subset = dataset.copy()
+        subset.loc[:,'bar'] = round((subset['close'] - subset['open']) / subset['open'] * 100, 2)
+        subset.loc[:,'change'] = round((subset['close'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
+        subset.loc[:,'open_jump'] = round((subset['open'] - subset['close'].shift(periods=1))/subset['close'].shift(periods=1) * 100,2)
+        subset.loc[:,'down_line'] = round((subset['close'] - subset['low']) / subset['close'] * 100, 2)
+        subset.loc[:,'up_line']   = round((subset['close'] - subset['high']) / subset['close'] * 100, 2)
+        subset.loc[:,'amp'] = round((subset['high'] - subset['low']) / subset['open'] * 100, 2)
+        for i in [5,10,30,60]:
+            subset.loc[:,'trend_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_trend,raw=True)
+        for i in [10,30,250]:
+            subset.loc[:,'pos_{}'.format(i)] = subset['close'].rolling(window=i).apply(_find_pos,raw=True)
+        for i in [10]:
+            subset.loc[:,'drop_days'.format(i)] = subset['change'].rolling(window=i).apply(_find_dropdays,raw=True)
+            subset.loc[:,'lossr_{}'.format(i)] = subset['change'].rolling(window=i).apply(_find_lossrate,raw=True)
+        subset = subset.dropna()
+        return subset
+
     def calculateDrop(dataset):
-        dataset['drop_score'] = dataset['drop_days']/10
+        dataset.loc[:,'drop_score'] = np.tan(dataset['drop_days']/5)
+        dataset.loc[:,'drop_score'] = dataset['drop_score'].clip(0,1)
+        return dataset
+
+    def calculateMA(dataset):
+        # ma_bias + 为价格过高，  - 为价格过低
+        settings = [ {'period':5,  'min':-0.08, 'max':0.08},
+                     {'period':10, 'min':-0.10, 'max':0.10},
+                     {'period':20, 'min':-0.15, 'max':0.15},
+                     {'period':30, 'min':-0.20, 'max':0.20} ]
+        for setting in settings:
+            period, vmin, vmax = setting['period'], setting['min'], setting['max']
+            dataset.loc[:,'ma{}'.format(period)] = talib.MA(dataset['close'].values, timeperiod=period, matype=0)
+            dataset.loc[:,'ma{}_bias'.format(period)] = (dataset['ma{}'.format(period)] - dataset['close']) / dataset['close']
+            dataset.loc[:,'ma{}_score'.format(period)] = np.tan((dataset.loc[:,'ma{}_bias'.format(period)]-vmin)/(vmax-vmin)-0.5)+0.5
+            dataset.loc[:,'ma{}_score'.format(period)] = dataset['ma{}_score'.format(period)].clip(0,1)
         return dataset
 
     def calculateKDJ(dataset):
@@ -30,7 +102,8 @@ class featureExtractor:
         dataset.loc[:,'kdj_j_move'] = (dataset['kdj_j'] - dataset['kdj_j'].shift(periods=1))/dataset['kdj_j'].shift(periods=1)
         dataset.loc[:,'kdj_j_move_prev'] = dataset['kdj_j_move'].shift(periods=1)
         vmin, vmax = -15, 115
-        dataset.loc[:,'kdj_score'] = (j-vmin)/(vmax-vmin)
+        dataset.loc[:,'kdj_score'] = np.tan((j-vmin)/(vmax-vmin)-0.5)+0.5
+        dataset.loc[:,'kdj_score'] = dataset['kdj_score'].clip(0,1)
         return dataset
 
 
@@ -52,7 +125,8 @@ class featureExtractor:
         score = bb_pos * bb_scope
         vmin, vmax = 0, 0.35
         score = (score - vmin) / (vmax-vmin)
-        dataset.loc[:,'bb_score'] = score
+        dataset.loc[:,'bb_score'] = np.tan(bb_pos-0.5)+0.5
+        dataset.loc[:,'bb_score'] = dataset['bb_score'].clip(0.1)
         return dataset
 
     def calculateMACD(dataset):
@@ -65,9 +139,19 @@ class featureExtractor:
         dataset.loc[:,'macd_dea'] = np.round(dea,3)
         dataset.loc[:,'macd_bar'] = np.round(hist*2,3)
         vmin, vmax = -0.5, 0.5
-        dataset.loc[:,'macd_score'] = (dataset['macd_bar'] - vmin) / (vmax-vmin)
+        dataset.loc[:,'macd_score'] = np.tan((dataset['macd_bar'] - vmin) / (vmax-vmin)-0.5)+0.5
+        dataset.loc[:,'macd_score'] = dataset['macd_score'].clip(0.1)
         return dataset
 
+    def calculateRSI(dataset):
+        vmin, vmax = 15, 85
+        dataset.loc[:,'rsi_7'] = talib.RSI(dataset['close'].values, timeperiod=7)
+        dataset.loc[:,'rsi_14'] = talib.RSI(dataset['close'].values, timeperiod=14)
+        dataset.loc[:,'rsi_score'] = np.tan((dataset['rsi_7'] - vmin) / (vmax-vmin)-0.5)+0.5
+        dataset.loc[:,'rsi_score'] = dataset['rsi_score'].clip(0.1)
+        return dataset
+
+    # 计算支撑位 暂时忽略
     def calculateSupport(dataset):
         dataset['mid_price'] = dataset[['open','close','high','low']].mean(axis=1)
         lookback_size = 120
