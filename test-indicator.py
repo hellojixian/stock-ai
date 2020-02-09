@@ -8,7 +8,9 @@ import argparse
 from lib.feature_extract import featureExtractor as fe
 from lib.datasource import DataSource as ds
 from lib.indicators.strategy_learner import StrategyLearner as learner
+
 from lib.indicators.dropdays import DropDays as dropdays
+from lib.indicators.trend import Trend as trend
 
 
 import warnings
@@ -72,7 +74,6 @@ if __name__ == "__main__":
     import warnings
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
     # np.random.seed(0)
     securities = ds.loadSecuirtyList()
 
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         samples = securities.sample(args['training_set_size']*2)
         res = pool.map(preload_data, samples.iterrows())
         pool.close()
-        print("[DONE]")
+        print("\n[DONE]")
 
         print("Generating training sets:\t",end="")
         for symbol,sample in samples[:(args['training_set_size']+1)].iterrows():
@@ -108,7 +109,11 @@ if __name__ == "__main__":
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
 
-        StrategyClass = dropdays
+        if args['indicator'] == 'dropdays':
+            StrategyClass = dropdays
+        elif args['indicator'] == 'trend':
+            StrategyClass = trend
+            
         ml = learner(StrategyClass)
         last_score = 0
         stop_improving_counter = 0
