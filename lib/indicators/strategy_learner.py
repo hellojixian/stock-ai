@@ -109,6 +109,28 @@ class StrategyLearner(object):
         score = round(np.mean(scores),4)
         return score
 
+    def gen_detailed_report(self, DNA, datasets):
+        if datasets is None: datasets = self.training_sets
+        scores = []
+        for training_set in datasets:
+            mystg = self.strategy(DNA)
+            if len(training_set)==0: continue
+            symbol = training_set.iloc[0]['symbol']
+            report = mystg.backtest(symbol, training_set)
+            score = report['profit']
+            scores.append(score)
+            del mystg
+
+        return {
+            "profit":{
+                "min": np.min(scores),
+                "max": np.max(scores),
+                "mean": np.mean(scores),
+                "median": np.median(scores)
+            }
+        }
+
+
     def evolve(self, training_sets, validation_sets):
         global POOL
         processed_DNA = mp.Value('i', 0)
@@ -120,8 +142,9 @@ class StrategyLearner(object):
 
         best_dna = self.pop[-1]
         result = {
-            "training_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
-            "validation_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets)
+            "train_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
+            "val_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets),
+            "val_report": self.gen_detailed_report(DNA=best_dna, datasets=self.validation_sets),
         }
         if self.should_save_knowledge(result):
             self.latest_best_dna=best_dna
