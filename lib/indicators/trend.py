@@ -3,13 +3,16 @@ from .base_strategy import BaseStrategy
 
 class Trend(BaseStrategy):
     '''
-     lossrate - 最近7日内几天是下跌的
-     drop_days - 连续下跌天数
-     last_change - 最后一只的涨跌
-     change_diff - 两日涨跌差今天减去昨天 正数增量上涨 否则下跌
-
-     buy_score >= 1 触发买入
-     sell_score >= 1 触发卖出
+     trend_5 - 5日趋势数值
+     trend_10 - 10日趋势数值
+     trend_30 - 30日趋势数值
+     trend_60 - 60日趋势数值
+     pos_10 - 10日价格位置
+     pos_30 - 30日价格位置
+     pos_250 - 250日价格位置
+     last_change - 最后一日价格变动
+     amp_0105 - 近期振幅变化
+     amp_0510 - 远期振幅变化
     '''
 
     NAME = 'dropdays'
