@@ -160,8 +160,7 @@ class StrategyLearner(object):
         data = { "learning":{
                     "latest_best_dna":self.latest_best_dna.tolist(),
                     "pop":self.pop.tolist()
-                  }
-                }
+                  }}
         with open(self.settings_filename, 'w') as outfile:
             json.dump(data, outfile, indent=2)
         print("[DONE]")
