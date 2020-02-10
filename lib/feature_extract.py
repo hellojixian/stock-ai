@@ -159,5 +159,6 @@ class featureExtractor:
         dataset.loc[:,'rsi_7'] = talib.RSI(dataset['close'].values, timeperiod=7)
         dataset.loc[:,'rsi_14'] = talib.RSI(dataset['close'].values, timeperiod=14)
         dataset.loc[:,'rsi_diff'] = dataset['rsi_7'] - dataset['rsi_7'].shift(periods=1)
+        dataset.loc[:,'rsi_diff_pre'] = dataset['rsi_diff'].shift(periods=1)
         dataset.loc[:,'rsi_bias'] = dataset['rsi_7'] - dataset['rsi_14']
         return dataset
