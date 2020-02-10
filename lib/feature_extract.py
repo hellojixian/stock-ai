@@ -15,6 +15,7 @@ class featureExtractor:
             # 清理数据
             dataset = dataset.dropna()
         except:
+            print('error')
             pass
         return dataset
 
@@ -109,10 +110,10 @@ class featureExtractor:
 
         vmin, vmax = -15, 115
         dataset.loc[:,'kdj_j_scaled'] = np.tan((j-vmin)/(vmax-vmin)-0.5)+0.5
-        dataset.loc[:,'kdj_j_scaled'] = dataset['kdj_score'].clip(0,1)
-
-        dataset.loc[:,'kdj_j_move'] = (dataset['kdj_j'] - dataset['kdj_j'].shift(periods=1))/dataset['kdj_j'].shift(periods=1)
-        dataset.loc[:,'kdj_j_move_prev'] = dataset['kdj_j_move'].shift(periods=1)
+        dataset.loc[:,'kdj_j_scaled'] = dataset['kdj_j_scaled'].clip(0,1)
+        dataset.loc[:,'kdj_j_diff'] = (dataset['kdj_j_scaled'] - dataset['kdj_j_scaled'].shift(periods=1))
+        dataset.loc[:,'kdj_j_diff_prev'] = dataset['kdj_j_diff'].shift(periods=1)
+        dataset.loc[:,'kdj_j_bias'] = (j - slowd)
 
         return dataset
 

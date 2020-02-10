@@ -6,11 +6,8 @@ class KDJ(BaseStrategy):
     # Feature,   Bias,   Scaler
     FEATURES = [
         ['kdj_j_scaled',  -0.5,  2],
-        ['ma5_bias',    0,  10],
-        ['ma10_bias',   0,  10],
-        ['ma20_bias',   0,  15],
-        ['ma30_bias',   0,  20],
-        ['ma_0510',     0,  20],
+        ['kdj_j_diff',       0,  3],
+        ['kdj_j_diff_prev',  0,  3],        
         ['change',      0,  10],
         ['amp_0105',    0,  2],
         ['amp_0510',    0,  1],

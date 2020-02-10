@@ -29,6 +29,7 @@ if __name__ == "__main__":
     features = ['amp_0105','amp_0510','change','drop_days','lossrate','change_diff']
     features = ['rsi_7','rsi_14']
     features = ['ma5_bias','ma10_bias','ma_0510','ma5_diff']
+    features = ['kdj_j_scaled','kdj_j_diff','kdj_j_diff_prev','kdj_j_bias']
     print(dataset[:5])
     for f in features:
         print(f,dataset[f].quantile(0.05), dataset[f].quantile(0.95))
