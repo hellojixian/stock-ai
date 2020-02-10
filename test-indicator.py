@@ -9,10 +9,8 @@ import pprint
 from lib.feature_extract import featureExtractor as fe
 from lib.datasource import DataSource as ds
 from lib.indicators.strategy_learner import StrategyLearner as learner
+from lib.indicators import indicators
 
-from lib.indicators.dropdays import DropDays as dropdays
-from lib.indicators.trend import Trend as trend
-from lib.indicators.rsi import RSI as rsi
 
 
 import warnings
@@ -48,7 +46,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Machine Learning.')
     parser.add_argument('--indicator','-i',
                         required=True,
-                        default='dropdays', type=str, choices=["dropdays","trend","rsi"],
+                        type=str, choices=indicators.keys(),
                         help='which module that you want to improve')
 
     parser.add_argument('--batch-size',
@@ -81,12 +79,7 @@ if __name__ == "__main__":
     pp = pprint.PrettyPrinter(indent=2, width=60)
 
     # 设置训练的指标模块
-    if args['indicator'] == 'dropdays':
-        StrategyClass = dropdays
-    elif args['indicator'] == 'trend':
-        StrategyClass = trend
-    elif args['indicator'] == 'rsi':
-        StrategyClass = rsi
+    StrategyClass = indicators[args['indicator']]
 
     for i in range(args['batch_size']):
         #skip batch logic

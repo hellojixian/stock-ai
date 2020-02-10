@@ -91,8 +91,8 @@ class featureExtractor:
             period, vmin, vmax = setting['period'], setting['min'], setting['max']
             dataset.loc[:,'ma{}'.format(period)] = talib.MA(dataset['close'].values, timeperiod=period, matype=0)
             dataset.loc[:,'ma{}_bias'.format(period)] = (dataset['ma{}'.format(period)] - dataset['close']) / dataset['close']
-            dataset.loc[:,'ma{}_score'.format(period)] = np.tan((dataset.loc[:,'ma{}_bias'.format(period)]-vmin)/(vmax-vmin)-0.5)+0.5
-            dataset.loc[:,'ma{}_score'.format(period)] = dataset['ma{}_score'.format(period)].clip(0,1)
+        dataset.loc[:,'ma_0510'] = (dataset['ma5'] - dataset['ma10']) / dataset['close']
+        dataset.loc[:,'ma5_diff'] = (dataset['ma5'] - dataset['ma5'].shift(periods=1)) / dataset['ma5']
         return dataset
 
     def calculateKDJ(dataset):
