@@ -2,7 +2,7 @@
 from .base_strategy import BaseStrategy
 
 class KDJ(BaseStrategy):
-    NAME = 'ma'
+    NAME = 'kdj'
     # Feature,   Bias,   Scaler
     FEATURES = [
         ['kdj_j_scaled',  -0.5,  2],
