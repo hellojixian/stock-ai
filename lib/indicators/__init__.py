@@ -2,7 +2,7 @@ from .dropdays import DropDays
 from .trend import Trend
 from .rsi import RSI
 from .ma import MA
-from .ma import KDJ
+from .kdj import KDJ
 
 indicators = {
     'rsi':RSI,
