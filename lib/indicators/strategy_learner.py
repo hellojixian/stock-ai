@@ -110,7 +110,6 @@ class StrategyLearner(object):
         return score
 
     def gen_detailed_report(self, DNA, datasets):
-        if datasets is None: datasets = self.training_sets
         scores = []
         for training_set in datasets:
             mystg = self.strategy(DNA)
