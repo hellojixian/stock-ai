@@ -106,11 +106,14 @@ class featureExtractor:
                                 slowd_matype=0)
         j = slowk*3 - slowd*2
         dataset.loc[:,'kdj_j'] = j
+
+        vmin, vmax = -15, 115
+        dataset.loc[:,'kdj_j_scaled'] = np.tan((j-vmin)/(vmax-vmin)-0.5)+0.5
+        dataset.loc[:,'kdj_j_scaled'] = dataset['kdj_score'].clip(0,1)
+
         dataset.loc[:,'kdj_j_move'] = (dataset['kdj_j'] - dataset['kdj_j'].shift(periods=1))/dataset['kdj_j'].shift(periods=1)
         dataset.loc[:,'kdj_j_move_prev'] = dataset['kdj_j_move'].shift(periods=1)
-        vmin, vmax = -15, 115
-        dataset.loc[:,'kdj_score'] = np.tan((j-vmin)/(vmax-vmin)-0.5)+0.5
-        dataset.loc[:,'kdj_score'] = dataset['kdj_score'].clip(0,1)
+
         return dataset
 
 

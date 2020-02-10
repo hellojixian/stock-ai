@@ -5,9 +5,9 @@ class RSI(BaseStrategy):
     NAME = 'rsi'
     # Feature,   Bias,   Scaler
     FEATURES = [
-        ['rsi_3',       -50,  0.01],
-        ['rsi_7',       -50,  0.01],
-        ['rsi_14',      -50,  0.01],
+        ['rsi_3',       -50,  0.02],
+        ['rsi_7',       -50,  0.02],
+        ['rsi_14',      -50,  0.02],
         ['rsi_diff',    0,  0.01],
         ['rsi_bias',    0,  0.01],
         ['change',      0,  10],

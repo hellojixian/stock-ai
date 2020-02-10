@@ -18,9 +18,9 @@ class Trend(BaseStrategy):
     NAME = 'trend'
     # Feature,   Bias,   Scaler
     FEATURES = [
-        ['pos_10',      0,  1],
-        ['pos_30',      0,  1],
-        ['pos_250',     0,  1],
+        ['pos_10',   -0.5,  2],
+        ['pos_30',   -0.5,  2],
+        ['pos_250',  -0.5,  2],
         ['trend_5',     0,  1],
         ['trend_10',    0,  1],
         ['trend_30',    0,  1],
