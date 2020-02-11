@@ -22,9 +22,10 @@ class BaseStrategy(object):
         self.session = None
         return
 
-    def backtest(self, symbol,dataset):
+    def backtest(self, symbol, dataset):
         self.dataset = dataset
         self.session_log = []
+        self.symbol = dataset.iloc[0]['symbol']
         for idx,record in dataset.iterrows():
             price = record['close']
             if self.session is not None: self.session['days']+=1
@@ -80,6 +81,7 @@ class BaseStrategy(object):
         baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
 
         return {
+            "symbol": self.symbol,
             "max_continue_errs": max_continue_errs,
             "sessions": sessions,
             "win_rate": round(win_rate,3),

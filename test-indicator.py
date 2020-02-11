@@ -74,7 +74,7 @@ if __name__ == "__main__":
     import warnings
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    # np.random.seed(0)
+    np.random.seed(0)
     securities = ds.loadSecuirtyList()
     pp = pprint.PrettyPrinter(indent=2, width=60)
 
@@ -118,19 +118,20 @@ if __name__ == "__main__":
         stop_improving_counter = 0
         for _ in range(args['step_size']):
             print("Batch :{}\t GA Learning step: {}".format(i,_))
-            report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+            result = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
             ml.dump_dna()
+            ml.print_report()
 
-            # early stop logic
-            if report['validation_score'] == last_score:
+            key_factor = 'training'
+            if result[key_factor]['score'] == last_score:
                 stop_improving_counter+=1
                 print("Not improving result: {}".format(stop_improving_counter))
             if stop_improving_counter>=args['early_stop']:
                 print("Early stop learning")
                 break
-            last_score = report['validation_score']
+            last_score = result[key_factor]['score']
 
-            pp.pprint(report)
+
         ml.save()
         del ml
 

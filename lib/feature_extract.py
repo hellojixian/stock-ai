@@ -15,7 +15,6 @@ class featureExtractor:
             # 清理数据
             dataset = dataset.dropna()
         except:
-            print('error')
             pass
         return dataset
 

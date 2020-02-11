@@ -4,6 +4,8 @@ import pandas as pd
 import progressbar
 import multiprocessing as mp
 import datetime
+import itertools
+import hashlib
 
 POP_SIZE = 30 #40
 NEW_KIDS = 70 #60
@@ -11,6 +13,8 @@ DNA_LEN = 26
 MUT_STRENGTH = 0.3
 POOL = None
 DNA_MIN, DNA_MAX = -5,5
+MAX_MAIN_PROCESSES = 8
+MAX_SUB_PROCESSES = 4
 
 def _init_globals(bar_size, counter):
     global pbar_size,processed_DNA, start_ts
@@ -34,6 +38,9 @@ class StrategyLearner(object):
         self.pop_size = POP_SIZE
         self.n_kids = NEW_KIDS
         self.mut_strength = MUT_STRENGTH
+        self.old_training_score = None
+        self.old_validation_score = None
+        self.stop_improving_counter = 0
         if len(self.pop)==0: self.pop = self.gen_DNAset()
         return
 
@@ -73,13 +80,19 @@ class StrategyLearner(object):
         global POOL, start_ts
         start_ts = datetime.datetime.now(tz=None)
         res = POOL.map(self._evaluate_dna_mp,dna_series)
-        v = np.array(res)
+        scores = []
+        for result in res:
+            self.reports['training'][self.serialize_dna(result['DNA'])] = {
+                 "reports":result['reports'],
+                 "score":result['score']
+            }
+            scores.append(result['score'])
+        v = np.array(scores)
         print("")
         return v
 
     def _evaluate_dna_mp(self, DNA):
-        datasets = self.training_sets
-        result = self.evaluate_dna(DNA=DNA, datasets=datasets)
+        score, reports = self._evaluate_dna_sp(DNA=DNA, datasource="training")
         with processed_DNA.get_lock():
             # pbar = progressbar.ProgressBar(max_value=pbar_size)
             processed_DNA.value+=1
@@ -93,63 +106,119 @@ class StrategyLearner(object):
             round(progress*100,2), processed_DNA.value,pbar_size,
             "#"*int(progress*bar_width),"."*(bar_width-int(progress*bar_width)),
             str(time_elapsed).split('.')[0], str(time_eta).split('.')[0]),end="")
-        return result
-
-    def evaluate_dna(self, DNA, datasets=None):
-        if datasets is None: datasets = self.training_sets
-        scores = []
-        for training_set in datasets:
-            mystg = self.strategy(DNA)
-            if len(training_set)==0: continue
-            symbol = training_set.iloc[0]['symbol']
-            report = mystg.backtest(symbol, training_set)
-            score = (report['profit'] - report['baseline']) * report['win_rate'] / (report['max_continue_errs'] +1)
-            scores.append(score)
-            del mystg
-        score = round(np.mean(scores),4)
-        return score
-
-    def gen_detailed_report(self, DNA, datasets):
-        scores = []
-        for training_set in datasets:
-            mystg = self.strategy(DNA)
-            if len(training_set)==0: continue
-            symbol = training_set.iloc[0]['symbol']
-            report = mystg.backtest(symbol, training_set)
-            score = round(report['profit'],3)
-            scores.append(score)
-            del mystg
-
-        scores = np.sort(scores)
-        scores[:] = scores[::-1]
         return {
-            "stat":{
-                "min": np.min(scores),
-                "max": np.max(scores),
-                "mean": np.mean(scores),
-                "median": np.median(scores)
-            },
-            "profits": list(scores)
+            "DNA": DNA,
+            "score": score,
+            "reports": pd.DataFrame(reports)
         }
 
+    def _evaluate_dna_sp(self,DNA,datasource):
+        if datasource == 'training' or datasource is None:
+            datasource = 'training'
+            datasets = self.training_sets
+        elif datasource=='validation':
+            datasets = self.validation_sets
+
+        scores,reports = [],[]
+        for dataset in datasets:
+            if len(dataset)==0: return None
+            mystg = self.strategy(DNA)
+            symbol = dataset.iloc[0]['symbol']
+            report = mystg.backtest(symbol, dataset)
+            score = self._loss_function(report)
+            scores.append(score)
+            reports.append(report)
+            del mystg
+        score = round(np.mean(scores),4)
+        return score, reports
+
+    def _evaluate_dna_core(self, data):
+        DNA, dataset = data[0],data[1]
+        if len(dataset)==0: return None
+        mystg = self.strategy(DNA)
+        symbol = dataset.iloc[0]['symbol']
+        report = mystg.backtest(symbol, dataset)
+        del mystg
+        return report
+
+    def _loss_function(self, report):
+        return (report['profit'] - report['baseline']) * report['win_rate'] / (report['max_continue_errs'] +1)
+
+    def evaluate_dna(self, DNA, datasource=None):
+        if datasource == 'training' or datasource is None:
+            datasource = 'training'
+            datasets = self.training_sets
+        elif datasource=='validation':
+            datasets = self.validation_sets
+
+        pool = mp.Pool(min(MAX_SUB_PROCESSES, len(datasets)))
+        res = pool.map(self._evaluate_dna_core, zip(itertools.repeat(DNA), datasets))
+        scores = []
+        for report in res:
+            if report is None: continue
+            score = self._loss_function(report)
+            scores.append(score)
+
+        score = round(np.mean(scores),4)
+        self.reports[datasource][self.serialize_dna(DNA)] = {
+             "reports":pd.DataFrame(res),
+             "score":score
+        }
+        pool.close()
+        return score
+
+    def print_report(self):
+        best_dna = self.pop[-1]
+        validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
+        validation_score  = validation_result['score']
+        training_result = self.reports['training'][self.serialize_dna(best_dna)]
+        training_score  = training_result['score']
+
+        width=100
+        print("="*width)
+        print("Training: {}".format(training_score) )
+        print(training_result['reports'])
+        print("="*width)
+        print("Validation: {}".format(validation_score) )
+        print(validation_result['reports'])
+        print("="*width)
+        return
+
+    def serialize_dna(self,dna):
+        return hashlib.md5(str(list(dna)).encode('utf-8')).hexdigest()
+
+
+    def reset_reports(self):
+        self.reports = {"training":{}, "validation":{}}
+        return
 
     def evolve(self, training_sets, validation_sets):
         global POOL
         processed_DNA = mp.Value('i', 0)
-        POOL = mp.Pool(mp.cpu_count(),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
+        POOL = mp.Pool(min(MAX_MAIN_PROCESSES,mp.cpu_count()),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
 
+        self.reset_reports()
         self.training_sets = training_sets
         self.validation_sets = validation_sets
+
+        # 主要进化逻辑
         self.kill_bad(self.make_kids())
 
         best_dna = self.pop[-1]
+        print('Validating...')
+        validation_score = self.evaluate_dna(DNA=best_dna, datasource="validation")
+        validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
+        training_score  = self.reports['training'][self.serialize_dna(best_dna)]['score']
+        training_result = self.reports['training'][self.serialize_dna(best_dna)]
         result = {
-            "training_score": self.evaluate_dna(DNA=best_dna, datasets=self.training_sets),
-            "validation_score": self.evaluate_dna(DNA=best_dna, datasets=self.validation_sets),
-            "report": self.gen_detailed_report(DNA=best_dna, datasets=self.validation_sets),
+            "training": training_result,
+            "validation": validation_result,
         }
+
         if self.should_save_knowledge(result):
-            self.latest_best_dna=best_dna
+            self.latest_best_dna     = best_dna
+            self.old_training_score  = training_result
+            self.old_validation_score= validation_score
             self.save()
         POOL.close()
         return result
@@ -162,12 +231,12 @@ class StrategyLearner(object):
     def should_save_knowledge(self,result):
         if self.latest_best_dna is None: return True
         decision = False
-        old_training_score = self.evaluate_dna(DNA=self.latest_best_dna,
-                                               datasets=self.training_sets)
-        old_validation_score = self.evaluate_dna(DNA=self.latest_best_dna,
-                                               datasets=self.validation_sets)
-        if result['training_score'] > old_training_score:
-           # if result['validation_score'] >= old_validation_score:
+        if self.old_training_score is None:
+            self.old_training_score = self.evaluate_dna(DNA=self.latest_best_dna,datasource="training")
+        if self.old_training_score is None:
+            self.old_validation_score = self.evaluate_dna(DNA=self.latest_best_dna,datasource="validation")
+        if result['training']['score'] > self.old_training_score:
+           # if result['validation_score'] >= self.old_validation_score:
            decision = True
         return decision
 
