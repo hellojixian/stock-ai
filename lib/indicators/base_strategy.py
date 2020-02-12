@@ -85,12 +85,12 @@ class BaseStrategy(object):
             "symbol": self.symbol,
             "cont_errs": max_continue_errs,
             "sessions": sessions,
-            "win_r": round(win_rate,3),
-            "profit": round(profit,3),
-            "baseline": round(baseline,3),
-            "pb_diff": round(profit-baseline,3),
+            "win_r": win_rate,
+            "profit": profit,
+            "baseline": baseline,
+            "pb_diff": profit-baseline,
             "hold_days":holding_days,
-            "days/sess": round(holding_days/(sessions+0.01),1)
+            "days/sess": holding_days/(sessions+0.01)
         }
 
     def should_sell(self, record):

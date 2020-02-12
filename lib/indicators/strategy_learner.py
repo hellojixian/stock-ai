@@ -183,14 +183,14 @@ class StrategyLearner(object):
         rows=['mean']
         print("="*width)
         print("Training: {}".format(training_score))
-        print(training_result['reports'])
+        print(np.round(training_result['reports'],3))
         print("-"*width)
         print(np.round(training_result['reports'][columns].describe(),3).loc[rows])
         print("="*width)
 
         print("\n")
         print("Validation: {}".format(validation_score) )
-        print(validation_result['reports'])
+        print(np.round(validation_result['reports'],3))
         print("-"*width)
         print(np.round(validation_result['reports'][columns].describe(),3).loc[rows])
         print("="*width)
