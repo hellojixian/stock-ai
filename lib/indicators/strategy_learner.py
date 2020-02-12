@@ -143,7 +143,7 @@ class StrategyLearner(object):
 
     def _loss_function(self, report):
         # if report['sess']==0: return 0
-        score = (report['profit'] - report['baseline']) * report['win_r'] * report['sessions'] / (report['cont_errs'] +1)
+        score = (report['profit'] - report['baseline']) * report['win_r'] * report['sessions'] / (report['cont_errs'] +1)        
         return score
     def evaluate_dna(self, DNA, datasource=None):
         if datasource == 'training' or datasource is None:

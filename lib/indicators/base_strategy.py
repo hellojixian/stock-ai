@@ -89,7 +89,7 @@ class BaseStrategy(object):
             "profit": round(profit,3),
             "baseline": round(baseline,3),
             "hold_days":holding_days,
-            "hold_rate": round(holding_days/self.dataset.shape[0],3)
+            "days/sess": round(holding_days/sessions,1)
         }
 
     def should_sell(self, record):
