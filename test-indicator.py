@@ -69,12 +69,17 @@ if __name__ == "__main__":
                         default=3, type=int,
                         help='Stop learning if N batch of improving the result')
 
+    parser.add_argument('--random','-r',
+                        default=1, type=int,
+                        help='By default using random data samples for learning')
+
     args = vars(parser.parse_args())
 
     import warnings
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    np.random.seed(0)
+    if args['random']!=1: np.random.seed(0)
+    
     securities = ds.loadSecuirtyList()
     pp = pprint.PrettyPrinter(indent=2, width=60)
 
