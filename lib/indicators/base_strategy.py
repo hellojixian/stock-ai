@@ -1,5 +1,6 @@
 import sys
 import math
+import numpy as np
 
 from lib.backtest import backtest as bt
 
@@ -82,13 +83,13 @@ class BaseStrategy(object):
 
         return {
             "symbol": self.symbol,
-            "max_continue_errs": max_continue_errs,
+            "cont_errs": max_continue_errs,
             "sessions": sessions,
-            "win_rate": round(win_rate,3),
+            "win_r": round(win_rate,3),
             "profit": round(profit,3),
             "baseline": round(baseline,3),
-            "holding_days":holding_days,
-            "holding_days_rate": round(holding_days/self.dataset.shape[0],3)
+            "hold_days":holding_days,
+            "hold_rate": round(holding_days/self.dataset.shape[0],3)
         }
 
     def should_sell(self, record):
@@ -102,7 +103,10 @@ class BaseStrategy(object):
         return decsion
 
     def dump_dna(self):
-        print("DNA: {}".format(str(self.dna)))
+        print("-"*100)
+        print("DNA Sample:  max: {:.2f}\t min: {:.2f}\t mean: {:.2f}".format(
+            np.max(self.dna),np.min(self.dna),np.mean(self.dna)))
+        print("{}".format(str(np.round(self.dna,2))))
         return
 
     def get_buy_score(self, record):

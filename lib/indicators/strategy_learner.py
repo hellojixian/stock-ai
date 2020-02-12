@@ -142,8 +142,9 @@ class StrategyLearner(object):
         return report
 
     def _loss_function(self, report):
-        return (report['profit'] - report['baseline']) * report['win_rate'] / (report['max_continue_errs'] +1)
-
+        # if report['sess']==0: return 0
+        score = (report['profit'] - report['baseline']) * report['win_r'] * report['sessions'] / (report['cont_errs'] +1)
+        return score
     def evaluate_dna(self, DNA, datasource=None):
         if datasource == 'training' or datasource is None:
             datasource = 'training'
@@ -176,12 +177,13 @@ class StrategyLearner(object):
 
         width=100
         print("="*width)
-        print("Training: {}".format(training_score) )
+        print("Training: {}".format(training_score))
         print(training_result['reports'])
         print("="*width)
         print("Validation: {}".format(validation_score) )
         print(validation_result['reports'])
         print("="*width)
+        print("\n")
         return
 
     def serialize_dna(self,dna):
@@ -205,11 +207,12 @@ class StrategyLearner(object):
         self.kill_bad(self.make_kids())
 
         best_dna = self.pop[-1]
-        print('Validating...')
+        print('Validating...',end="")
         validation_score = self.evaluate_dna(DNA=best_dna, datasource="validation")
         validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
         training_score  = self.reports['training'][self.serialize_dna(best_dna)]['score']
         training_result = self.reports['training'][self.serialize_dna(best_dna)]
+        print("[DONE]")
         result = {
             "training": training_result,
             "validation": validation_result,
@@ -217,7 +220,7 @@ class StrategyLearner(object):
 
         if self.should_save_knowledge(result):
             self.latest_best_dna     = best_dna
-            self.old_training_score  = training_result
+            self.old_training_score  = training_score
             self.old_validation_score= validation_score
             self.save()
         POOL.close()
@@ -235,6 +238,7 @@ class StrategyLearner(object):
             self.old_training_score = self.evaluate_dna(DNA=self.latest_best_dna,datasource="training")
         if self.old_training_score is None:
             self.old_validation_score = self.evaluate_dna(DNA=self.latest_best_dna,datasource="validation")
+
         if result['training']['score'] > self.old_training_score:
            # if result['validation_score'] >= self.old_validation_score:
            decision = True
