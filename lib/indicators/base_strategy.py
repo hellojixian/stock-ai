@@ -88,8 +88,9 @@ class BaseStrategy(object):
             "win_r": round(win_rate,3),
             "profit": round(profit,3),
             "baseline": round(baseline,3),
+            "pb_diff": round(profit-baseline,3),
             "hold_days":holding_days,
-            "days/sess": round(holding_days/sessions,1)
+            "days/sess": round(holding_days/(sessions+0.01),1)
         }
 
     def should_sell(self, record):
