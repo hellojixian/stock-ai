@@ -132,11 +132,7 @@ class featureExtractor:
         bb_scope = round((upper - lower) / dataset['close'], 3)
         dataset.loc[:,'bb_pos'] = bb_pos
         dataset.loc[:,'bb_scope'] = bb_scope
-        score = bb_pos * bb_scope
-        vmin, vmax = 0, 0.35
-        score = (score - vmin) / (vmax-vmin)
-        dataset.loc[:,'bb_score'] = np.tan(bb_pos-0.5)+0.5
-        dataset.loc[:,'bb_score'] = dataset['bb_score'].clip(0.1)
+        
         return dataset
 
     def calculateMACD(dataset):
