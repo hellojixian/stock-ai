@@ -175,7 +175,7 @@ class StrategyLearner(object):
         rows=['mean']
 
         # print training result
-        if len(self.reports['training'])>0:
+        if self.serialize_dna(best_dna) in self.reports['training']:
             training_result = self.reports['training'][self.serialize_dna(best_dna)]
             training_score  = training_result['score']
             print("="*width)
@@ -186,7 +186,7 @@ class StrategyLearner(object):
             print("="*width)
 
         # print validation result
-        if len(self.reports['validation'])>0:
+        if self.serialize_dna(best_dna) in self.reports['validation']:
             validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
             validation_score  = validation_result['score']
             print("\n")
