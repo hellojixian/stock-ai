@@ -31,6 +31,6 @@ if __name__ == "__main__":
     # features = ['ma5_bias','ma10_bias','ma_0510','ma5_diff']
     # features = ['kdj_j_scaled','kdj_j_diff','kdj_j_diff_prev','kdj_j_bias']
     # features = ['macd_bar','macd_dea','macd_dif','macd_change','macd_price_c']
-    features = ['bb_pos','bb_scope','bb_diff']
-    print(dataset.columns)
+    # print(dataset.columns)
+    features = ['bb_pos','bb_scope','bb_diff','bb_diff_prev']
     print(dataset[features].describe(percentiles=[0.01,0.05,0.25,0.50,0.75,0.95,0.99]))

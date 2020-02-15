@@ -6,14 +6,12 @@ class BOLL(BaseStrategy):
     # Feature,   Bias,   Scaler
     FEATURES = [
         ['bb_pos',      -0.5,  0.02],
-        ['bb_diff',        0,  20],
-        ['rsi_14',      -50,  0.02],
-        ['rsi_diff',    0,  0.01],
-        ['rsi_diff_pre',0,  0.01],
-        ['rsi_bias',    0,  0.01],
-        ['change',      0,  10],
-        ['amp_0105',    0,  2],
-        ['amp_0510',    0,  1],
+        ['bb_diff',        0,    20],
+        ['bb_diff_prev',   0,    20],
+        ['bb_scope',       0,     1],
+        ['change',         0,    10],
+        ['amp_0105',       0,     2],
+        ['amp_0510',       0,     1],
     ]
     DNA_LEN = len(FEATURES)*2
 

@@ -134,7 +134,7 @@ class featureExtractor:
         dataset.loc[:,'bb_pos'] = bb_pos
         dataset.loc[:,'bb_scope'] = bb_scope
         dataset.loc[:,'bb_diff'] = (dataset['bb_middle'] - dataset['bb_middle'].shift(periods=1)) / dataset['bb_middle'].shift(periods=1)
-
+        dataset.loc[:,'bb_diff_prev'] = dataset['bb_diff'].shift(periods=1)
 
         return dataset
 
