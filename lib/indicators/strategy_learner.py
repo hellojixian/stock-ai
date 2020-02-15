@@ -171,7 +171,7 @@ class StrategyLearner(object):
     def print_report(self):
         best_dna = self.pop[-1]
         width=100
-        columns=['cont_errs','sessions','win_r','wl_rate','profit','pb_diff','days/sess']
+        columns=['errs','sess','win_r','wl_rate','profit','pb_diff','days/sess']
         rows=['mean']
 
         # print training result
