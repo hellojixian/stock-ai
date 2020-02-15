@@ -12,7 +12,7 @@ class backtest:
 
     def buy(self, symbol, price, amount):
         cost = (price * amount * (1+self.buy_commission))
-        if self.cash < cost:
+        if self.cash*1.01 < cost:
             raise Exception('No enough cash, cash:{}  cost:{}'.format(
             round(self.cash,2), round(cost,2)))
 
