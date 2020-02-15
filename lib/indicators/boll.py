@@ -6,8 +6,8 @@ class BOLL(BaseStrategy):
     # Feature,   Bias,   Scaler
     FEATURES = [
         ['bb_pos',      -0.5,     2],
-        ['bb_diff',        0,    60],
-        ['bb_diff_prev',   0,    60],
+        ['bb_diff',        0,   100],
+        ['bb_diff_prev',   0,   100],
         ['bb_scope',       0,     2],
         ['change',         0,    10],
         ['amp_0105',       0,     2],
