@@ -75,7 +75,7 @@ class BaseStrategy(object):
                 win_p += session['change']
                 continue_errs=0
             else:
-                loss_p += session['change']
+                loss_p += -session['change']
                 continue_errs+=1
             if continue_errs>max_continue_errs:
                 max_continue_errs=continue_errs
