@@ -5,8 +5,8 @@ class MACD(BaseStrategy):
     NAME = 'macd'
     # Feature,   Bias,   Scaler
     FEATURES = [
-        ['rsi_3',       -50,  0.02],
-        ['rsi_7',       -50,  0.02],
+        ['macd_bar',        0,   2],
+        ['macd_bar_diff',  -50,  0.4],
         ['rsi_14',      -50,  0.02],
         ['rsi_diff',    0,  0.01],
         ['rsi_diff_pre',0,  0.01],

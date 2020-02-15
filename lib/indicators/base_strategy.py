@@ -67,7 +67,7 @@ class BaseStrategy(object):
         wins,continue_errs,max_continue_errs = 0,0,0
         holding_days = 0
         win_p = 0
-        loss_p = 0
+        loss_p = 1
         for session in self.session_log:
             holding_days += session['days']
             if session['change']>=0:

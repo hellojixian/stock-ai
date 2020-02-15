@@ -147,10 +147,7 @@ class featureExtractor:
                                     signalperiod=9)
         dataset.loc[:,'macd_dif'] = np.round(dif,3)
         dataset.loc[:,'macd_dea'] = np.round(dea,3)
-        dataset.loc[:,'macd_bar'] = np.round(hist*2,3)
-        vmin, vmax = -0.5, 0.5
-        dataset.loc[:,'macd_score'] = np.tan((dataset['macd_bar'] - vmin) / (vmax-vmin)-0.5)+0.5
-        dataset.loc[:,'macd_score'] = dataset['macd_score'].clip(0.1)
+        dataset.loc[:,'macd_bar'] = np.round(hist*2,3)        
         return dataset
 
     def calculateRSI(dataset):
