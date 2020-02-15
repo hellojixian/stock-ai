@@ -87,7 +87,9 @@ class BaseStrategy(object):
         total_days = self.dataset.shape[0]
         sess_rate = sessions / total_days
 
-        wl_rate = win_p/loss_p
+        wl_rate = 0
+        if sess_rate>0.005:
+            wl_rate = win_p/loss_p
         profit = (self.test.get_value() - self.test.get_init_fund()) / self.test.get_init_fund()
         baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
 
