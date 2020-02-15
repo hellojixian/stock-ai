@@ -80,7 +80,9 @@ class BaseStrategy(object):
             if continue_errs>max_continue_errs:
                 max_continue_errs=continue_errs
 
-        win_rate = wins / sessions
+        win_rate = 0
+        if sessions>0:
+            win_rate = wins / sessions
 
         total_days = self.dataset.shape[0]
         sess_rate = sessions / total_days
