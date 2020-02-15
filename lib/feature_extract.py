@@ -147,7 +147,11 @@ class featureExtractor:
                                     signalperiod=9)
         dataset.loc[:,'macd_dif'] = np.round(dif,3)
         dataset.loc[:,'macd_dea'] = np.round(dea,3)
-        dataset.loc[:,'macd_bar'] = np.round(hist*2,3)        
+        dataset.loc[:,'macd_bar'] = np.round(hist*2,3)
+        dataset.loc[:,'macd_change'] = (dataset['macd_bar'] - dataset['macd_bar'].shift(periods=1))/dataset['macd_bar'].shift(periods=1)
+        dataset.loc[:,'macd_change'] = dataset['macd_change'].clip(-8,8)
+        dataset.loc[:,'macd_price_c'] = (dataset['macd_change']+0.01)/(dataset['change']*100+0.01)
+        dataset.loc[:,'macd_price_c'] = dataset['macd_price_c'].clip(-15,15)
         return dataset
 
     def calculateRSI(dataset):

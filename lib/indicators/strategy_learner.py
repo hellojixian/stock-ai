@@ -170,28 +170,33 @@ class StrategyLearner(object):
 
     def print_report(self):
         best_dna = self.pop[-1]
-        validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
-        validation_score  = validation_result['score']
-        training_result = self.reports['training'][self.serialize_dna(best_dna)]
-        training_score  = training_result['score']
-
         width=100
         columns=['cont_errs','sessions','win_r','wl_rate','profit','pb_diff','days/sess']
         rows=['mean']
-        print("="*width)
-        print("Training: {}".format(training_score))
-        print(np.round(training_result['reports'],3))
-        print("-"*width)
-        print(np.round(training_result['reports'][columns].describe(),3).loc[rows])
-        print("="*width)
 
-        print("\n")
-        print("Validation: {}".format(validation_score) )
-        print(np.round(validation_result['reports'],3))
-        print("-"*width)
-        print(np.round(validation_result['reports'][columns].describe(),3).loc[rows])
-        print("="*width)
-        print("\n")
+        # print training result
+        if len(self.reports['training'])>0:
+            training_result = self.reports['training'][self.serialize_dna(best_dna)]
+            training_score  = training_result['score']
+            print("="*width)
+            print("Training: {}".format(training_score))
+            print(np.round(training_result['reports'],3))
+            print("-"*width)
+            print(np.round(training_result['reports'][columns].describe(),3).loc[rows])
+            print("="*width)
+
+        # print validation result
+        if len(self.reports['validation'])>0:
+            validation_result = self.reports['validation'][self.serialize_dna(best_dna)]
+            validation_score  = validation_result['score']
+            print("\n")
+            print("Validation: {}".format(validation_score) )
+            print(np.round(validation_result['reports'],3))
+            print("-"*width)
+            print(np.round(validation_result['reports'][columns].describe(),3).loc[rows])
+            print("="*width)
+            print("\n")
+
         return
 
     def serialize_dna(self,dna):
