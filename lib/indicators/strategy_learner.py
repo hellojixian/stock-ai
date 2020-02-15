@@ -142,10 +142,7 @@ class StrategyLearner(object):
         return report
 
     def _loss_function(self, report):
-        # if report['sess']==0: return 0
-        # score = (report['profit'] - report['baseline']) * report['win_r'] / (report['cont_errs'] +1)
-        # score = report['win_r'] * 1/(report['cont_errs'] +1)
-        score = report['win_r'] * report['pb_diff']
+        score = report['win_r'] * report['pb_diff'] * report['wl_rate']
         return score
 
     def evaluate_dna(self, DNA, datasource=None):
@@ -179,7 +176,7 @@ class StrategyLearner(object):
         training_score  = training_result['score']
 
         width=100
-        columns=['cont_errs','sessions','win_r','profit','pb_diff','days/sess']
+        columns=['cont_errs','sessions','win_r','wl_rate','profit','pb_diff','days/sess']
         rows=['mean']
         print("="*width)
         print("Training: {}".format(training_score))

@@ -66,18 +66,24 @@ class BaseStrategy(object):
         sessions = len(self.session_log)
         wins,continue_errs,max_continue_errs = 0,0,0
         holding_days = 0
+        win_p = 0
+        loss_p = 0
         for session in self.session_log:
             holding_days += session['days']
             if session['change']>=0:
                 wins+=1
+                win_p += session['change']
                 continue_errs=0
             else:
+                loss_p += session['change']
                 continue_errs+=1
             if continue_errs>max_continue_errs:
                 max_continue_errs=continue_errs
 
         win_rate = 0
         if sessions>0: win_rate = wins / sessions
+
+        wl_rate = win_p/loss_p
         profit = (self.test.get_value() - self.test.get_init_fund()) / self.test.get_init_fund()
         baseline = (self.dataset.iloc[-1]['close'] - self.dataset.iloc[0]['close'])/self.dataset.iloc[0]['close']
 
@@ -86,6 +92,7 @@ class BaseStrategy(object):
             "cont_errs": max_continue_errs,
             "sessions": sessions,
             "win_r": win_rate,
+            "wl_rate": wl_rate,
             "profit": profit,
             "baseline": baseline,
             "pb_diff": profit-baseline,
