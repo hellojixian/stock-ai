@@ -130,9 +130,12 @@ class featureExtractor:
                         matype=0)
         bb_pos = round((dataset['close'] - lower)/(upper - lower) ,3)
         bb_scope = round((upper - lower) / dataset['close'], 3)
+        dataset.loc[:,'bb_middle'] = middle
         dataset.loc[:,'bb_pos'] = bb_pos
         dataset.loc[:,'bb_scope'] = bb_scope
-        
+        dataset.loc[:,'bb_diff'] = (dataset['bb_middle'] - dataset['bb_middle'].shift(periods=1)) / dataset['bb_middle'].shift(periods=1)
+
+
         return dataset
 
     def calculateMACD(dataset):
