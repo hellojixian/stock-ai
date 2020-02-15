@@ -93,15 +93,15 @@ class BaseStrategy(object):
 
         return {
             "symbol": self.symbol,
-            "cont_errs": max_continue_errs,
-            "sessions": sessions,
+            "errs": max_continue_errs,
+            "sess": sessions,
+            "sess_r": sess_rate,
             "win_r": win_rate,
             "wl_rate": wl_rate,
             "profit": profit,
             "baseline": baseline,
             "pb_diff": profit-baseline,
             "hold_days":holding_days,
-            "sess_rate": sess_rate,
             "days/sess": holding_days/(sessions+0.01)
         }
 
