@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     # 设置训练的指标模块
     if args['all'] is not None:
-        strategies = indicators
+        strategies = indicators.values()
     else:
         strategies = [indicators[args['indicator']]]
 
