@@ -131,7 +131,7 @@ if __name__ == "__main__":
             last_score = 0
             stop_improving_counter = 0
             for _ in range(args['step_size']):
-                print("Batch :{}\t GA Learning step: {}".format(i,_))
+                print("{}: Batch :{}\t GA Learning step: {}".format(StrategyClass.NAME, i,_))
                 result = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
                 ml.dump_dna()
                 ml.print_report()
