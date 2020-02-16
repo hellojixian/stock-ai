@@ -13,6 +13,7 @@ class featureExtractor:
             dataset = featureExtractor.calculateMA(dataset)
             dataset = featureExtractor.calculateRSI(dataset)
             dataset = featureExtractor.calculateSAR(dataset)
+            dataset = featureExtractor.calculateMOM(dataset)
             # 清理数据
             dataset = dataset.dropna()
         except:
@@ -169,4 +170,14 @@ class featureExtractor:
         dataset.loc[:,'sar_diff'] = (dataset['sar'] - dataset['sar'].shift(periods=1))/dataset['sar'].shift(periods=1)
         dataset.loc[:,'sar_diff_pre'] = dataset['sar_diff'].shift(periods=1)
         dataset.loc[:,'sar_bias'] = (dataset['sar'] - dataset['close'])/dataset['close']
+        return dataset
+
+    def calculateMOM(dataset):
+        timeperiod = 14
+        dataset.loc[:,'mom_adx']    = talib.ADX(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=timeperiod)
+        dataset.loc[:,'mom_adxr']   = talib.ADXR(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=timeperiod)
+        dataset.loc[:,'mom_mdi']    = talib.MINUS_DI(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=timeperiod)
+        dataset.loc[:,'mom_mdm']    = talib.MINUS_DM(dataset['high'].values, dataset['low'].values, timeperiod=timeperiod)
+        dataset.loc[:,'mom_pdi']    = talib.MINUS_DI(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=timeperiod)
+        dataset.loc[:,'mom_pdm']    = talib.MINUS_DM(dataset['high'].values, dataset['low'].values, timeperiod=timeperiod)
         return dataset

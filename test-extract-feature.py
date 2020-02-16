@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # features = ['macd_bar','macd_dea','macd_dif','macd_change','macd_price_c']
 
     # features = ['bb_pos','bb_scope','bb_diff','bb_diff_prev']
-    features = ['close','sar','sar_bias','sar_diff','sar_diff_pre']
+    # features = ['close','sar','sar_bias','sar_diff','sar_diff_pre']
+    features = ['mom_adx','mom_adxr','mom_mdi','mom_mdm','mom_pdi','mom_pdm']
     print(dataset[features].describe(percentiles=[0.01,0.05,0.25,0.50,0.75,0.95,0.99]))
     print(dataset[features][:5])
