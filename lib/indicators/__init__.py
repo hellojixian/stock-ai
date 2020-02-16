@@ -7,6 +7,7 @@ from .macd import MACD
 from .boll import BOLL
 from .sar import SAR
 from .mom import MOM
+from .cci import CCI
 
 indicators = {
     'rsi':      RSI,
@@ -16,6 +17,7 @@ indicators = {
     'boll':     BOLL,
     'sar':      SAR,
     'mom':      MOM,
+    'cci':      CCI,
     'trend':    Trend,
     'dropdays': DropDays
 }

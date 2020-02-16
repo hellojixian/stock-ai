@@ -14,6 +14,7 @@ class featureExtractor:
             dataset = featureExtractor.calculateRSI(dataset)
             dataset = featureExtractor.calculateSAR(dataset)
             dataset = featureExtractor.calculateMOM(dataset)
+            dataset = featureExtractor.calculateCCI(dataset)
             # 清理数据
             dataset = dataset.dropna()
         except:
@@ -180,4 +181,12 @@ class featureExtractor:
         dataset.loc[:,'mom_mdm']    = talib.MINUS_DM(dataset['high'].values, dataset['low'].values, timeperiod=timeperiod)
         dataset.loc[:,'mom_pdi']    = talib.MINUS_DI(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=timeperiod)
         dataset.loc[:,'mom_pdm']    = talib.MINUS_DM(dataset['high'].values, dataset['low'].values, timeperiod=timeperiod)
+        return dataset
+
+    def calculateCCI(dataset):
+        timeperiods = [7,14,25]
+        for p in timeperiods:
+            dataset.loc[:,'cci_{}'.format(p)]      = talib.CCI(dataset['high'].values, dataset['low'].values, dataset['close'].values, timeperiod=p)
+            dataset.loc[:,'cci_{}_diff'.format(p)] = dataset['cci_{}'.format(p)] - dataset['cci_{}'.format(p)].shift(periods=1)
+        dataset.loc[:,'cci_bias'] = dataset['cci_7'] - dataset['cci_14']
         return dataset
