@@ -7,7 +7,7 @@ class SAR(BaseStrategy):
     FEATURES = [
         ['sar_bias',        0,    5],
         ['sar_diff',        0,   20],
-        ['sar_diff_prev',   0,   20],
+        ['sar_diff_pre',    0,   20],
         ['change',          0,   10],
         ['amp_0105',        0,    2],
         ['amp_0510',        0,    1],
