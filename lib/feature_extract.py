@@ -12,6 +12,7 @@ class featureExtractor:
             dataset = featureExtractor.calculateDrop(dataset)
             dataset = featureExtractor.calculateMA(dataset)
             dataset = featureExtractor.calculateRSI(dataset)
+            dataset = featureExtractor.calculateSAR(dataset)
             # 清理数据
             dataset = dataset.dropna()
         except:
@@ -160,4 +161,12 @@ class featureExtractor:
         dataset.loc[:,'rsi_diff'] = dataset['rsi_7'] - dataset['rsi_7'].shift(periods=1)
         dataset.loc[:,'rsi_diff_pre'] = dataset['rsi_diff'].shift(periods=1)
         dataset.loc[:,'rsi_bias'] = dataset['rsi_7'] - dataset['rsi_14']
+        return dataset
+
+
+    def calculateSAR(dataset):
+        dataset.loc[:,'sar'] = talib.SAR(dataset['high'].values, dataset['low'].values, acceleration=0.02, maximum=0.2)
+        dataset.loc[:,'sar_diff'] = (dataset['sar'] - dataset['sar'].shift(periods=1))/dataset['sar'].shift(periods=1)
+        dataset.loc[:,'sar_diff_pre'] = dataset['sar_diff'].shift(periods=1)
+        dataset.loc[:,'sar_bias'] = (dataset['sar'] - dataset['close'])/dataset['close']
         return dataset

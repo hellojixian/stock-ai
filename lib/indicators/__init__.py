@@ -5,6 +5,7 @@ from .ma import MA
 from .kdj import KDJ
 from .macd import MACD
 from .boll import BOLL
+from .sar import SAR
 
 indicators = {
     'rsi':      RSI,
@@ -12,6 +13,7 @@ indicators = {
     'ma':       MA,
     'macd':     MACD,
     'boll':     BOLL,
+    'sar':     SAR,
     'trend':    Trend,
     'dropdays': DropDays
 }
