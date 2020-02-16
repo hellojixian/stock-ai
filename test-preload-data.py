@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+从最原始的数据中提取出交易日和股票代码信息
+这是最初级别的数据预处理
+'''
 import pandas as pd
 import warnings
 import multiprocessing as mp

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+测试回测核心模块是否可用，回测模块应该能支持买入卖出的基本操作
+'''
 import pandas as pd
 import numpy as np
 import warnings

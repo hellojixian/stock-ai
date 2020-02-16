@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+回测单个技术指标的自我学习能力
+'''
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
@@ -79,7 +82,7 @@ if __name__ == "__main__":
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
     if args['random']!=1: np.random.seed(0)
-    
+
     securities = ds.loadSecuirtyList()
     pp = pprint.PrettyPrinter(indent=2, width=60)
 

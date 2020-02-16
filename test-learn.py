@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+@暂时可遗弃
+回测机器学习框架用的，用于测试动态调整参数矩阵的想法
+'''
 import pandas as pd
 import numpy as np
 import argparse, datetime
@@ -105,7 +109,7 @@ if __name__ == "__main__":
         for _ in range(args['step_size']):
             print("Batch :{}\t GA Learning step: {}".format(i,_))
             report = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
-            
+
             # early stop logic
             if report['validation_score'] == last_score:
                 stop_improving_counter+=1

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+@暂时可遗弃
+单独测试策略框架用的，主要目的是能够测试回测框架可以正确解析DNA
+'''
 import pandas as pd
 import numpy as np
 import multiprocessing as mp

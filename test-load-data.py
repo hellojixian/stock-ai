@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+'''
+@暂时保留，以后可遗弃
+从最原始的数据中提取出特征信息
+这是第二级别的数据预处理，用于加速机器学习的装载速度
+不过目前已经优化为多线程，所以这个脚本作用已经不那么明显。
+'''
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
