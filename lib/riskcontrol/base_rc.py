@@ -2,12 +2,27 @@
 基础风险控制模块
 可配置参数有哪些：
 - 最大利润回撤止损
-- 浮动止损点
-- 最大止损点
-- 最大止盈点
+- 浮动止损点步长
+- N日最高价止盈点
+- N日最低价止损点
+- 最高价的浮动边界 +/- 双向性
+- 最低价的浮动边界 +/- 双向性
+- 仓位调动逻辑
 '''
 
 class BaseRiskControl(object):
+    NAME = 'risk_control'
+    # Feature,   Bias,   Scaler
+    FEATURES = [
+        ['max_backdraw',            0,  35],
+        ['float_stoploss_step',     0,   1],
+        ['stoploss_ndays_low',      0,   1],
+        ['stopwin_ndays_high',      0,   1],
+        ['stoploss_margin',         0,   1],
+        ['stopwin_margin',          0,   1],
+    ]
+    DNA_LEN = len(FEATURES)*2
+
     def __init__(self, strategy):
         self.strategy = strategy
         return
@@ -30,28 +45,4 @@ class BaseRiskControl(object):
         '''
 
 
-        return
-
-
-
-
-class RiskControl(BaseRiskControl):
-    NAME = 'risk_control'
-    # Feature,   Bias,   Scaler
-    FEATURES = [
-        ['ma5_diff',    0,  35],
-        ['ma5_bias',    0,  10],
-        ['ma10_bias',   0,  10],
-        ['ma20_bias',   0,  15],
-        ['ma30_bias',   0,  20],
-        ['ma_0510',     0,  20],
-        ['change',      0,  10],
-        ['amp_0105',    0,  2],
-        ['amp_0510',    0,  1],
-    ]
-    DNA_LEN = len(FEATURES)*2
-
-    def __init__(self, dna):
-        super().__init__()
-        self.dna = dna
         return
