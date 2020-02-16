@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 '''
-回测单个技术指标的自我学习能力
+测试风险控制模块
+一个好的风险控制模块应当可以做到如下
+- 正向扩大基差
+- 减小最大回撤
+- 降低最大连续出错
+- 正向扩大盈亏比
+
+对于同一组测试数据逐个测试各项指标，
+先测试基础数据数据值，然后动态调整参数来回测对各项指标的影响
+
+这个脚本负责提出用于迭代测试的数据集合
 '''
+
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
@@ -12,8 +23,6 @@ from lib.feature_extract import featureExtractor as fe
 from lib.datasource import DataSource as ds
 from lib.indicators.strategy_learner import StrategyLearner as learner
 from lib.indicators import indicators
-
-
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -46,15 +55,6 @@ if __name__ == "__main__":
     mp.freeze_support()
 
     parser = argparse.ArgumentParser(description='Machine Learning.')
-    parser.add_argument('--all','-a',
-                        nargs='*',required=False,
-                        type=bool,
-                        help="test all indicators")
-
-    parser.add_argument('--indicator','-i',
-                        required=False,
-                        type=str, choices=indicators.keys(),
-                        help='which module that you want to improve')
 
     parser.add_argument('--batch-size',
                         default=100, type=int,
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         help='skip first N of batch')
 
     parser.add_argument('--step-size',
-                        default=10, type=int,
+                        default=30, type=int,
                         help='how many generations for each batch of learning')
 
     parser.add_argument('--training-set-size',
@@ -83,19 +83,10 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
 
     if args['random']!=1: np.random.seed(0)
-
     securities = ds.loadSecuirtyList()
 
-    # 设置训练的指标模块
-    if args['all'] is not None:
-        strategies = indicators
-    else:
-        strategies = [indicators[args['indicator']]]
-
     for i in range(args['batch_size']):
-        #skip batch logic
         if i < args['skip_batch']: continue
-
         print("Learning batch :{}".format(i))
 
         print("Preloading datasets: {}".format(args['training_set_size']*2))
@@ -124,30 +115,7 @@ if __name__ == "__main__":
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
 
-        for StrategyClass in strategies:
-            print("Training indicator: {}".format(StrategyClass.NAME))
+        print(len(validation_sets))
 
-            ml = learner(StrategyClass)
-            last_score = 0
-            stop_improving_counter = 0
-            for _ in range(args['step_size']):
-                print("Batch :{}\t GA Learning step: {}".format(i,_))
-                result = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
-                ml.dump_dna()
-                ml.print_report()
-
-                key_factor = 'training'
-                if result[key_factor]['score'] == last_score:
-                    stop_improving_counter+=1
-                    print("Not improving result: {}".format(stop_improving_counter))
-                if stop_improving_counter>=args['early_stop']:
-                    print("Early stop learning")
-                    break
-                last_score = result[key_factor]['score']
-
-
-            ml.save()
-            del ml
-
-            print("-"*100)
-            print("\n")
+        print("-"*100)
+        print("\n")
