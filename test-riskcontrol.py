@@ -16,7 +16,7 @@
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
-import datetime, time
+import datetime, time, sys
 import argparse
 
 from lib.feature_extract import featureExtractor as fe
@@ -82,7 +82,10 @@ if __name__ == "__main__":
 
     args = vars(parser.parse_args())
 
-    if args['random']!=1: np.random.seed(0)
+
+    if args['random']!=1:
+        print('pseudo random')
+        np.random.seed(0)
     securities = ds.loadSecuirtyList()
 
     for i in range(args['batch_size']):
@@ -115,7 +118,14 @@ if __name__ == "__main__":
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
 
-        print(len(validation_sets))
+        dataset = validation_sets[0]
+        symbol = dataset.iloc[0]['symbol']
+        stg = indicators['macd']
+        from lib.riskcontrol.base_rc import BaseRiskControl
+        rc = BaseRiskControl(stg)
+        rc.backtest(symbol, dataset)
+        print(symbol)
+        sys.exit(0)
 
         print("-"*100)
         print("\n")

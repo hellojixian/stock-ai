@@ -21,14 +21,3 @@ class DropDays(BaseStrategy):
         ['amp_0510',    0,  1],
     ]
     DNA_LEN = len(FEATURES)*2
-
-    def __init__(self, dna):
-        super().__init__()
-        self.dna = dna
-        return
-
-    def get_buy_score(self, record):
-        return super().get_buy_score(record)
-
-    def get_sell_score(self, record):
-        return super().get_sell_score(record)

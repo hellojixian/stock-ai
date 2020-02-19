@@ -24,7 +24,7 @@ class BaseRiskControl(object):
     DNA_LEN = len(FEATURES)*2
 
     def __init__(self, strategy):
-        self.strategy = strategy
+        self.strategy = strategy()
         return
 
     def reset(self):
@@ -43,6 +43,10 @@ class BaseRiskControl(object):
         回测一套既定的止损策略
         返回回测得分
         '''
+        baseline_score = self.strategy.backtest(symbol, dataset)
+        baseline_result = self.strategy.evalute_result()
+        print(baseline_score, baseline_result)
+
 
 
         return

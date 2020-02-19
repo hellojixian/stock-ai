@@ -16,8 +16,3 @@ class CCI(BaseStrategy):
         ['amp_0510',      0,      1],
     ]
     DNA_LEN = len(FEATURES)*2
-
-    def __init__(self, dna):
-        super().__init__()
-        self.dna = dna
-        return

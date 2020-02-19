@@ -1,5 +1,5 @@
 import sys
-import math
+import math, os, json
 import numpy as np
 
 from lib.backtest import backtest as bt
@@ -9,13 +9,24 @@ MIN_BUY_UNIT = 100
 BUY_THRESHOLD = 1
 SELL_THRESHOLD = 1
 
-
 class BaseStrategy(object):
 
-    def __init__(self):
+    def __init__(self, dna=None):
+        self.settings_filename = os.path.join('data','knowledgebase','{}-settings.json'.format(self.NAME))
+        if dna is not None:
+            self.dna=dna
+        else:
+            self.load_best_dna()
         self.test = bt(init_fund=INIT_FUND)
         self.reset()
         self.session_log = []
+        return
+
+    def load_best_dna(self):
+        if os.path.isfile(self.settings_filename):
+            with open(self.settings_filename) as json_file:
+                data = json.load(json_file)
+                self.dna = np.array(data['learning']['latest_best_dna'])
         return
 
     def reset(self):

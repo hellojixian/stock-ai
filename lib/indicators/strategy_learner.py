@@ -32,6 +32,7 @@ class StrategyLearner(object):
         self.settings_filename = os.path.join('data','knowledgebase','{}-settings.json'.format(strategy.NAME))
         self.reset()
         self.load()
+        return
 
     def reset(self):
         self.pop = []
