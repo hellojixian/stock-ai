@@ -16,7 +16,7 @@ from .base_rc import BaseRiskControl as strategy
 POP_SIZE = 30 #30
 NEW_KIDS = 70 #70
 DNA_LEN = 26
-MUT_STRENGTH = 0.3
+MUT_STRENGTH = 0.5
 POOL = None
 DNA_MIN, DNA_MAX = 0,1
 MAX_MAIN_PROCESSES = 30
