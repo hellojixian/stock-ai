@@ -153,7 +153,7 @@ class RiskControlLearner(object):
         return report
 
     def _loss_function(self, report):
-        score = report['wlr_dif'] * report['winr_dif']
+        score = report['wlr_dif'] * report['winr_dif'] * (-report['errs_dif'])
         return score
 
     def evaluate_dna(self, DNA, datasource=None):
@@ -192,7 +192,7 @@ class RiskControlLearner(object):
         processed_DNA = mp.Value('i', 0)
         POOL = mp.Pool(min(MAX_MAIN_PROCESSES,mp.cpu_count()),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
 
-        print('Generating baseline results...',end="")
+        print('Generating baseline results.\t',end="")
         self.gen_baseline_results(training_sets)
         self.gen_baseline_results(validation_sets)
         print("[DONE]")
