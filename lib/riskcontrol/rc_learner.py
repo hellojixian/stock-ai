@@ -250,7 +250,7 @@ class RiskControlLearner(object):
         mystg.parse_dna(mystg)
         print("DNA Settings:")
         for setting in mystg.settings:
-            print("{}:\t{}".format(setting, round(mystg.settings[setting],3)))
+            print("\t{} :\t{}".format(setting, round(mystg.settings[setting],3)))
         return
 
     def should_save_knowledge(self,result):

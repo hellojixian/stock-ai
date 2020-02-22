@@ -101,8 +101,7 @@ if __name__ == "__main__":
 
     # 设置训练的指标模块
     # default
-    strategies = indicators.values()
-    
+    strategies = indicators.values()    
     if args['all'] is not None:
         strategies = indicators.values()
     elif args['indicator']:
