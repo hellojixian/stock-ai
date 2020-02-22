@@ -13,8 +13,8 @@ import hashlib
 
 from .base_rc import BaseRiskControl as strategy
 
-POP_SIZE = 30 #40
-NEW_KIDS = 70 #60
+POP_SIZE = 30 #30
+NEW_KIDS = 70 #70
 DNA_LEN = 26
 MUT_STRENGTH = 0.3
 POOL = None
@@ -141,7 +141,7 @@ class RiskControlLearner(object):
     def _evaluate_dna_core(self, data):
         DNA, dataset = data[0],data[1]
         if len(dataset)==0: return None
-        mystg = self.strategy(DNA)
+        mystg = self.strategy(strategy=self.indicator ,dna=DNA)
         symbol = dataset.iloc[0]['symbol']
         report = mystg.backtest(symbol, dataset)
         del mystg
@@ -246,10 +246,11 @@ class RiskControlLearner(object):
 
     def dump_dna(self):
         best_dna = self.pop[-1]
-        mystg = self.strategy(best_dna)
+        mystg = self.strategy(strategy=self.indicator ,dna=best_dna)
         mystg.parse_dna(mystg)
+        print("DNA Settings:")
         for setting in mystg.settings:
-            print("{}: {}".format(setting,mystg.settings[setting]))
+            print("{}:\t{}".format(setting, round(mystg.settings[setting],3)))
         return
 
     def should_save_knowledge(self,result):
