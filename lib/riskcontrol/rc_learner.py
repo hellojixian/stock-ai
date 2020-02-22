@@ -19,7 +19,7 @@ DNA_LEN = 26
 MUT_STRENGTH = 0.5
 POOL = None
 DNA_MIN, DNA_MAX = 0,1
-MAX_MAIN_PROCESSES = 30
+MAX_MAIN_PROCESSES = 24
 MAX_SUB_PROCESSES = 10
 
 def _init_globals(bar_size, counter):
