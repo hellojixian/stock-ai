@@ -21,7 +21,7 @@ import argparse
 
 from lib.feature_extract import featureExtractor as fe
 from lib.datasource import DataSource as ds
-from lib.indicators.strategy_learner import StrategyLearner as learner
+from lib.riskcontrol.rc_learner import RiskControlLearner as learner
 from lib.indicators import indicators
 
 import warnings
@@ -56,6 +56,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Machine Learning.')
 
+    parser.add_argument('--all','-a',
+                        nargs='*',required=False,
+                        type=bool,
+                        help="test all indicators")
+
+    parser.add_argument('--indicator','-i',
+                        required=False,
+                        type=str, choices=indicators.keys(),
+                        help='which module that you want to improve')
+
     parser.add_argument('--batch-size',
                         default=100, type=int,
                         help='how many batch of samples for learning')
@@ -86,7 +96,14 @@ if __name__ == "__main__":
     if args['random']!=1:
         print('pseudo random')
         np.random.seed(0)
+
     securities = ds.loadSecuirtyList()
+
+    # 设置训练的指标模块
+    if args['all'] is not None:
+        strategies = indicators.values()
+    else:
+        strategies = [indicators[args['indicator']]]
 
     for i in range(args['batch_size']):
         if i < args['skip_batch']: continue
@@ -118,14 +135,29 @@ if __name__ == "__main__":
             if dataset.shape[0]>0: validation_sets.append(dataset)
         print("[DONE]")
 
-        dataset = validation_sets[0]
-        symbol = dataset.iloc[0]['symbol']
-        stg = indicators['macd']
-        from lib.riskcontrol.base_rc import BaseRiskControl
-        rc = BaseRiskControl(stg)
-        rc.backtest(symbol, dataset)
-        print(symbol)
-        sys.exit(0)
+        for StrategyClass in strategies:
+            print("Training indicator: {}".format(StrategyClass.NAME))
 
-        print("-"*100)
-        print("\n")
+            ml = learner(StrategyClass)
+            last_score = 0
+            stop_improving_counter = 0
+            for _ in range(args['step_size']):
+                print("Indicator: {}\t Batch: {}\t GA Learning step: {}".format(StrategyClass.NAME, i,_))
+                result = ml.evolve(training_sets=training_sets, validation_sets=validation_sets)
+                ml.dump_dna()
+                ml.print_report()
+
+                key_factor = 'training'
+                if result[key_factor]['score'] == last_score:
+                    stop_improving_counter+=1
+                    print("Not improving result: {}".format(stop_improving_counter))
+                if stop_improving_counter>=args['early_stop']:
+                    print("Early stop learning")
+                    break
+                last_score = result[key_factor]['score']
+
+            ml.save()
+            del ml
+
+            print("-"*100)
+            print("\n")
