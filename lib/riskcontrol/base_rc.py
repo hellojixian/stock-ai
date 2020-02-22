@@ -22,7 +22,7 @@ BUY_THRESHOLD = 1
 SELL_THRESHOLD = 1
 
 class BaseRiskControl(object):
-    NAME = 'risk_control'
+    NAME = 'riskcontrol'
     # Feature,   min,   max
     FEATURES = [
         ['max_stoploss_rate',      -0.15,   0.01],
@@ -93,7 +93,7 @@ class BaseRiskControl(object):
                 recover_rate = (price - self.lowest_price)/self.lowest_price
                 if recover_rate <= self.settings['max_recover_rate']:
                     decision = True
-                    
+
             cost = self.test.positions[symbol]['cost']
             profit = (price - cost) / cost
             if profit < self.settings['min_profit_hold']:
