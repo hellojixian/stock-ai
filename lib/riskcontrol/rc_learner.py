@@ -46,6 +46,7 @@ class RiskControlLearner(object):
         self.old_training_score = None
         self.old_validation_score = None
         self.stop_improving_counter = 0
+        self.baseline_results = {}
         if len(self.pop)==0: self.pop = self.gen_DNAset()
         return
 
@@ -179,7 +180,6 @@ class RiskControlLearner(object):
         return score
 
     def gen_baseline_results(self, datasets):
-        self.baseline_results = {}
         for dataset in datasets:
             symbol = dataset.iloc[0]['symbol']
             baseline_stg = self.indicator()
