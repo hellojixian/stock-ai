@@ -194,6 +194,7 @@ class RiskControlLearner(object):
 
         print('Generating baseline results...',end="")
         self.gen_baseline_results(training_sets)
+        self.gen_baseline_results(validation_sets)
         print("[DONE]")
 
         self.reset_reports()
