@@ -153,7 +153,7 @@ class RiskControlLearner(object):
         return report
 
     def _loss_function(self, report):
-        score = report['profit_dif']
+        score = report['wlr_dif'] * report['winr_dif']
         return score
 
     def evaluate_dna(self, DNA, datasource=None):
