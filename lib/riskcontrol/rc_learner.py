@@ -192,7 +192,9 @@ class RiskControlLearner(object):
         processed_DNA = mp.Value('i', 0)
         POOL = mp.Pool(min(MAX_MAIN_PROCESSES,mp.cpu_count()),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
 
+        print('Generating baseline results...',end="")
         self.gen_baseline_results(training_sets)
+        print("[DONE]")
 
         self.reset_reports()
         self.training_sets = training_sets
