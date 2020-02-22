@@ -129,9 +129,7 @@ class RiskControlLearner(object):
             if len(dataset)==0: return None
             symbol = dataset.iloc[0]['symbol']
 
-            baseline_stg = self.indicator()
-            baseline_result = baseline_stg.backtest(symbol, dataset)
-
+            baseline_result = self.baseline_results[symbol]
             mystg = self.strategy(strategy=self.indicator ,dna=DNA)
             report = mystg.backtest(symbol, dataset, baseline_result)
             score = self._loss_function(report)
@@ -147,9 +145,7 @@ class RiskControlLearner(object):
         if len(dataset)==0: return None
         symbol = dataset.iloc[0]['symbol']
 
-        baseline_stg = self.indicator()
-        baseline_result = baseline_stg.backtest(symbol, dataset)
-
+        baseline_result = self.baseline_results[symbol]
         mystg = self.strategy(strategy=self.indicator ,dna=DNA)
         report = mystg.backtest(symbol, dataset, baseline_result)
         del mystg
@@ -182,10 +178,21 @@ class RiskControlLearner(object):
         pool.close()
         return score
 
+    def gen_baseline_results(datasets):
+        self.baseline_results = {}
+        for dataset in datasets:
+            symbol = dataset.iloc[0]['symbol']
+            baseline_stg = self.indicator()
+            baseline_result = baseline_stg.backtest(symbol, dataset)
+            self.baseline_results[symbol] = baseline_result
+        return self.baseline_results
+
     def evolve(self, training_sets, validation_sets):
         global POOL
         processed_DNA = mp.Value('i', 0)
         POOL = mp.Pool(min(MAX_MAIN_PROCESSES,mp.cpu_count()),initializer=_init_globals, initargs=(POP_SIZE+NEW_KIDS,processed_DNA))
+
+        self.gen_baseline_results(training_sets)
 
         self.reset_reports()
         self.training_sets = training_sets
