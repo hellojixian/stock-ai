@@ -127,14 +127,15 @@ class RiskControlLearner(object):
         scores,reports = [],[]
         for dataset in datasets:
             if len(dataset)==0: return None
+            symbol = dataset.iloc[0]['symbol']
+
             baseline_stg = self.indicator()
-            baseline_stg.backtest(symbol, dataset)
-            baseline_result = baseline_stg.evalute_result()
+            baseline_result = baseline_stg.backtest(symbol, dataset)
 
             mystg = self.strategy(strategy=self.indicator ,dna=DNA)
-            symbol = dataset.iloc[0]['symbol']
             report = mystg.backtest(symbol, dataset, baseline_result)
             score = self._loss_function(report)
+            
             scores.append(score)
             reports.append(report)
             del mystg
