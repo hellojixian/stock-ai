@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # 设置训练的指标模块
     if args['all'] is not None:
         strategies = indicators.values()
-    else:
+    elif args['indicator']:
         strategies = [indicators[args['indicator']]]
 
     for i in range(args['batch_size']):
