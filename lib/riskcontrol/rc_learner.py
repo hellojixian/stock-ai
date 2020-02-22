@@ -178,7 +178,7 @@ class RiskControlLearner(object):
         pool.close()
         return score
 
-    def gen_baseline_results(datasets):
+    def gen_baseline_results(self, datasets):
         self.baseline_results = {}
         for dataset in datasets:
             symbol = dataset.iloc[0]['symbol']
