@@ -15,7 +15,7 @@ from .base_rc import BaseRiskControl as strategy
 
 POP_SIZE = 30 #30
 NEW_KIDS = 70 #70
-MUT_STRENGTH = 0.2
+MUT_STRENGTH = 0.1
 POOL = None
 DNA_MIN, DNA_MAX = 0,1
 MAX_MAIN_PROCESSES = 28
@@ -135,7 +135,7 @@ class RiskControlLearner(object):
             mystg = self.strategy(strategy=self.indicator ,dna=DNA)
             report = mystg.backtest(symbol, dataset, baseline_result)
             score = self._loss_function(report)
-            
+
             scores.append(score)
             reports.append(report)
             del mystg
@@ -145,9 +145,13 @@ class RiskControlLearner(object):
     def _evaluate_dna_core(self, data):
         DNA, dataset = data[0],data[1]
         if len(dataset)==0: return None
-        mystg = self.strategy(strategy=self.indicator ,dna=DNA)
         symbol = dataset.iloc[0]['symbol']
-        report = mystg.backtest(symbol, dataset)
+
+        baseline_stg = self.indicator()
+        baseline_result = baseline_stg.backtest(symbol, dataset)
+
+        mystg = self.strategy(strategy=self.indicator ,dna=DNA)
+        report = mystg.backtest(symbol, dataset, baseline_result)
         del mystg
         return report
 
