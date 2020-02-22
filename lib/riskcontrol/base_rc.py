@@ -48,7 +48,6 @@ class BaseRiskControl(object):
         self.session_log = []
         self.strategy_result = None
         self.baseline_result = None
-        self.baseline_score = None
         self.last_stoploss_price = None
         self.continue_loss = 0
         return
@@ -142,13 +141,15 @@ class BaseRiskControl(object):
             decision = True
         return decision
 
-    def backtest(self, symbol, dataset):
+    def backtest(self, symbol, dataset, baseline_result=None):
         '''
         回测一套既定的止损策略
         返回回测得分
         '''
-        self.baseline_score = self.strategy.backtest(symbol, dataset)
-        self.baseline_result = self.strategy.evalute_result()
+        self.strategy.backtest(symbol, dataset)
+        self.baseline_result = baseline_result
+        if self.baseline_result is None:
+            self.baseline_result = self.strategy.evalute_result()
 
         self.dataset = dataset
         self.session_log = []
