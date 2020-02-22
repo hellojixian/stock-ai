@@ -29,7 +29,7 @@ class BaseRiskControl(object):
         ['max_backdraw_rate',       0.05,   0.20],
         ['max_drop_hold',          -0.05,  -0.10],
         ['max_recover_rate',       0.005,   0.15],
-        ['min_profit_hold',        -0.01,   0.05],
+        ['min_profit_hold',        -0.01,   0.10],
         ['catch_buy_rate',         0.005,   0.20],
         ['max_continue_loss',           5,    10],
         ['min_stoploss_days',           5,    15],
