@@ -124,6 +124,8 @@ class BaseRiskControl(object):
         decision = False
         symbol = record['symbol']
         price = record['close']
+        cost = self.test.positions[symbol]['cost']
+        profit = (price - cost) / cost
         if symbol in self.test.positions:
             if profit < self.settings['init_fund_rate']:
                 decision = True
