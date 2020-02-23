@@ -162,8 +162,8 @@ class BaseRiskControl(object):
             else:
                 allowed_cash = self.allowed_cash_loss
 
-            if allowed_cash>total_cash:
-                amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
+        if allowed_cash>total_cash:
+            amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
         return amount
 
     def should_ignore_buy(self,record):
