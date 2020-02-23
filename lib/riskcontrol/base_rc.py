@@ -67,8 +67,8 @@ class BaseRiskControl(object):
         self.lowest_price = None
         self.last_catch_buy_profit = 0
         self.last_catch_buy_loss = 0
-        self.allowed_cash_loss = 0
-        self.allowed_cash_win = 0
+        self.allowed_cash_loss = None
+        self.allowed_cash_win = None
         return
 
     def parse_dna(self,dna):
@@ -151,8 +151,9 @@ class BaseRiskControl(object):
             allowed_cash = total_cash * self.settings['init_fund_rate']
         else:
             #追仓
-            self.allowed_cash_loss = total_cash * self.settings['ongoing_fund_rate_loss']
-            self.allowed_cash_win = total_cash * self.settings['ongoing_fund_rate_win']
+            if self.allowed_cash_loss is None:
+                self.allowed_cash_loss = total_cash * self.settings['ongoing_fund_rate_loss']
+                self.allowed_cash_win = total_cash * self.settings['ongoing_fund_rate_win']
 
         if profit > 0:
             allowed_cash = self.allowed_cash_win
