@@ -157,9 +157,9 @@ class RiskControlLearner(object):
         # score = report['profit_dif']
         score = 0
         if report['profit_dif']>0: score+=1
-        if report['wlr_dif']>0: score+=report['wlr_dif']
-        if report['winr_dif']>0: score+=report['winr_dif']
-        if report['errs_dif']<0: score+=(-report['errs_dif'])
+        if report['wlr_dif']>0: score+=1
+        if report['winr_dif']>0: score+=1
+        if report['errs_dif']<0: score+=1
         return score
 
     def evaluate_dna(self, DNA, datasource=None):
