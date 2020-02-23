@@ -25,14 +25,13 @@ class BaseRiskControl(object):
     NAME = 'riskcontrol'
     # Feature,   min,   max
     FEATURES = [
-        ['max_stoploss_rate',      -0.15,   0.01],
-        ['max_backdraw_rate',       0.05,   0.20],
+        ['max_stoploss_rate',      -0.10,   0.01],
+        ['max_backdraw_rate',       0.01,   0.10],
         ['max_drop_hold',          -0.05,  -0.10],
         ['max_recover_rate',       0.005,   0.15],
-        ['min_profit_hold',        -0.01,   0.10],
-        ['catch_buy_rate',         0.005,   0.20],
-        ['max_continue_loss',           5,    10],
-        ['min_stoploss_days',           5,    15],
+        ['init_fund_rate',           0.1,    0.5],
+        ['ongoing_fund_rate',        0.2,    0.5],
+        ['ongoing_step',            0.01,   0.10],
     ]
     DNA_LEN = len(FEATURES)*2
 
@@ -94,11 +93,6 @@ class BaseRiskControl(object):
                 if recover_rate <= self.settings['max_recover_rate']:
                     decision = True
 
-            cost = self.test.positions[symbol]['cost']
-            profit = (price - cost) / cost
-            if profit < self.settings['min_profit_hold']:
-                decision = True
-
         return decision
 
     def should_force_sell(self,record):
@@ -129,21 +123,29 @@ class BaseRiskControl(object):
     def should_catch_buy(self, record):
         decision = False
         price = record['close']
-        if self.last_stoploss_price is not None:
-            drop_rate = (self.last_stoploss_price - price) / price
-            if drop_rate >= self.settings['catch_buy_rate'] \
-                and self.last_stoploss_days >= round(self.settings['min_stoploss_days']):
-                self.last_stoploss_price = None
-                self.last_stoploss_days = None
+        if symbol in self.test.positions:
+            if profit < self.settings['init_fund_rate']:
                 decision = True
         return decision
 
+    def max_allowed_buy_amount(self, record):
+        total_cash = self.test.get_cash()
+        symbol = record['symbol']
+        price = record['close']
+        amount = 0
+        if symbol not in self.test.positions:
+            #建仓
+            allowed_cash = total_cash * self.settings['init_fund_rate']
+        else:
+            #追仓
+            allowed_cash = total_cash * self.settings['ongoing_fund_rate']
+
+        amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
+        return amount
+
     def should_ignore_buy(self,record):
         decision = False
-        price = record['close']
-        if self.continue_loss >= round(self.settings['max_continue_loss']):
-            self.continue_loss = 0
-            decision = True
+        # 忽略买入信号逻辑
         return decision
 
     def backtest(self, symbol, dataset, baseline_result=None):
@@ -190,7 +192,7 @@ class BaseRiskControl(object):
             cash = self.test.get_cash()
             if cash > MIN_BUY_UNIT*price and self.strategy.should_buy(record) \
             and self.should_ignore_buy(record)==False or self.should_catch_buy(record):
-                amount = (math.ceil(cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
+                amount = self.max_allowed_buy_amount(record)
                 if amount>0:
                     if record['symbol'] not in self.test.positions:
                         self.session = {
