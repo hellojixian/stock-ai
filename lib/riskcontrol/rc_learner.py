@@ -157,8 +157,8 @@ class RiskControlLearner(object):
         # score = report['profit_dif']
         score = 0
         if report['profit_dif']>0: score+=1
-        if report['wlr_dif']>0: score+=1
-        if report['winr_dif']>0: score+=1
+        if report['wlr_dif']>0: score+=2
+        if report['winr_dif']>0: score+=2
         if report['errs_dif']<0: score+=1
         return score
 
