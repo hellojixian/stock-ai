@@ -30,8 +30,8 @@ class BaseRiskControl(object):
         ['max_drop_hold',          -0.05,  -0.10],
         ['max_recover_rate',       0.005,   0.15],
         ['init_fund_rate',           0.1,    0.5],
-        ['ongoing_fund_rate',        0.2,    0.5],
-        ['ongoing_step',           -0.10,   0.10],
+        ['ongoing_fund_rate',        0.1,    0.4],
+        ['ongoing_step',            -0.5,  -0.01],
     ]
     DNA_LEN = len(FEATURES)*2
 
