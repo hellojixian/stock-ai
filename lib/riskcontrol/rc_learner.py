@@ -13,8 +13,8 @@ import hashlib
 
 from .base_rc import BaseRiskControl as strategy
 
-POP_SIZE = 30 #30
-NEW_KIDS = 70 #70
+POP_SIZE = 40 #30
+NEW_KIDS = 80 #70
 MUT_STRENGTH = 0.3
 POOL = None
 DNA_MIN, DNA_MAX = 0,1
