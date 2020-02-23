@@ -30,8 +30,10 @@ class BaseRiskControl(object):
         ['max_drop_hold',          -0.05,  -0.10],
         ['max_recover_rate',        0.01,   0.08],
         ['init_fund_rate',           0.1,    0.5],
-        ['ongoing_fund_rate',        0.1,    0.4],
-        ['ongoing_step',           -0.05,  -0.01],
+        ['ongoing_fund_rate_loss',   0.1,    0.4],
+        ['ongoing_fund_rate_win',    0.1,    0.4],
+        ['ongoing_step_loss',       -0.05,  -0.01],
+        ['ongoing_step_win',       -0.05,  -0.01],
     ]
     DNA_LEN = len(FEATURES)*2
 
@@ -64,6 +66,9 @@ class BaseRiskControl(object):
         self.session = None
         self.lowest_price = None
         self.last_catch_buy_profit = 0
+        self.last_catch_buy_loss = 0
+        self.allowed_cash_loss = 0
+        self.allowed_cash_win = 0
         return
 
     def parse_dna(self,dna):
@@ -128,7 +133,10 @@ class BaseRiskControl(object):
         if symbol in self.test.positions:
             cost = self.test.positions[symbol]['cost']
             profit = (price - cost) / cost
-            if (profit - self.last_catch_buy_profit) < self.settings['ongoing_step']:
+            if (profit - self.last_catch_buy_loss) < self.settings['ongoing_step_loss']:
+                self.last_catch_buy_loss = profit
+                decision = True
+            if (profit - self.last_catch_buy_profit) > self.settings['ongoing_step_win']:
                 self.last_catch_buy_profit = profit
                 decision = True
         return decision
@@ -143,9 +151,16 @@ class BaseRiskControl(object):
             allowed_cash = total_cash * self.settings['init_fund_rate']
         else:
             #追仓
-            allowed_cash = total_cash * self.settings['ongoing_fund_rate']
+            self.allowed_cash_loss = total_cash * self.settings['ongoing_fund_rate_loss']
+            self.allowed_cash_win = total_cash * self.settings['ongoing_fund_rate_win']
 
-        amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
+        if profit > 0:
+            allowed_cash = self.allowed_cash_win
+        else:
+            allowed_cash = self.allowed_cash_loss
+
+        if allowed_cash>total_cash:
+            amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
         return amount
 
     def should_ignore_buy(self,record):
