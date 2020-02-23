@@ -32,8 +32,8 @@ class BaseRiskControl(object):
         ['init_fund_rate',           0.1,    0.8],
         ['ongoing_fund_rate_loss',   0.1,    0.4],
         ['ongoing_fund_rate_win',    0.1,    0.4],
-        ['ongoing_step_loss',      -0.05,  -0.01],
-        ['ongoing_step_win',        0.01,   0.05],
+        ['ongoing_step_loss',      -0.05,  -0.00],
+        ['ongoing_step_win',        0.00,   0.05],
     ]
     DNA_LEN = len(FEATURES)*2
 
