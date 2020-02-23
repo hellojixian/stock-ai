@@ -29,7 +29,7 @@ class BaseRiskControl(object):
         ['max_backdraw_rate',       0.01,   0.10],
         ['max_drop_hold',          -0.05,  -0.10],
         ['max_recover_rate',        0.01,   0.08],
-        ['init_fund_rate',           0.1,    0.5],
+        ['init_fund_rate',           0.1,    0.8],
         ['ongoing_fund_rate_loss',   0.1,    0.4],
         ['ongoing_fund_rate_win',    0.1,    0.4],
         ['ongoing_step_loss',      -0.05,  -0.01],
