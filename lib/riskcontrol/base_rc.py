@@ -155,6 +155,8 @@ class BaseRiskControl(object):
                 self.allowed_cash_loss = total_cash * self.settings['ongoing_fund_rate_loss']
                 self.allowed_cash_win = total_cash * self.settings['ongoing_fund_rate_win']
 
+        cost = self.test.positions[symbol]['cost']
+        profit = (price - cost) / cost
         if profit > 0:
             allowed_cash = self.allowed_cash_win
         else:
