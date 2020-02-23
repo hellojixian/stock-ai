@@ -31,7 +31,7 @@ class BaseRiskControl(object):
         ['max_recover_rate',       0.005,   0.15],
         ['init_fund_rate',           0.1,    0.5],
         ['ongoing_fund_rate',        0.2,    0.5],
-        ['ongoing_step',            0.01,   0.10],
+        ['ongoing_step',           -0.10,   0.10],
     ]
     DNA_LEN = len(FEATURES)*2
 
@@ -63,6 +63,7 @@ class BaseRiskControl(object):
         self.position = 0
         self.session = None
         self.lowest_price = None
+        self.last_catch_buy_profit = 0
         return
 
     def parse_dna(self,dna):
@@ -123,11 +124,12 @@ class BaseRiskControl(object):
     def should_catch_buy(self, record):
         decision = False
         symbol = record['symbol']
-        price = record['close']        
+        price = record['close']
         if symbol in self.test.positions:
             cost = self.test.positions[symbol]['cost']
             profit = (price - cost) / cost
-            if profit < self.settings['init_fund_rate']:
+            if (profit - self.last_catch_buy_profit) < self.settings['ongoing_step']:
+                self.last_catch_buy_profit = profit
                 decision = True
         return decision
 
