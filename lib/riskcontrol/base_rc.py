@@ -122,6 +122,7 @@ class BaseRiskControl(object):
 
     def should_catch_buy(self, record):
         decision = False
+        symbol = record['symbol']
         price = record['close']
         if symbol in self.test.positions:
             if profit < self.settings['init_fund_rate']:
