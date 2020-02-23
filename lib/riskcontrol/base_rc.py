@@ -155,15 +155,15 @@ class BaseRiskControl(object):
                 self.allowed_cash_loss = total_cash * self.settings['ongoing_fund_rate_loss']
                 self.allowed_cash_win = total_cash * self.settings['ongoing_fund_rate_win']
 
-        cost = self.test.positions[symbol]['cost']
-        profit = (price - cost) / cost
-        if profit > 0:
-            allowed_cash = self.allowed_cash_win
-        else:
-            allowed_cash = self.allowed_cash_loss
+            cost = self.test.positions[symbol]['cost']
+            profit = (price - cost) / cost
+            if profit > 0:
+                allowed_cash = self.allowed_cash_win
+            else:
+                allowed_cash = self.allowed_cash_loss
 
-        if allowed_cash>total_cash:
-            amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
+            if allowed_cash>total_cash:
+                amount = (math.ceil(allowed_cash / (MIN_BUY_UNIT*price))-10) * MIN_BUY_UNIT
         return amount
 
     def should_ignore_buy(self,record):
